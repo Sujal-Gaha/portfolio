@@ -13,10 +13,9 @@ export type Link = {
 }
 
 export const SITE: Site = {
-  TITLE: 'astro-erudite',
-  DESCRIPTION:
-    'astro-erudite is a opinionated, no-frills blogging template—built with Astro, Tailwind, and shadcn/ui.',
-  EMAIL: 'jason@enscribe.dev',
+  TITLE: 'Sujal Magar',
+  DESCRIPTION: 'I am a Fullstack MERN developer with 2+ years of experience',
+  EMAIL: 'suzalgahamagar@gmail.com',
   NUM_POSTS_ON_HOMEPAGE: 2,
   POSTS_PER_PAGE: 3,
   SITEURL: 'https://astro-erudite.vercel.app',
@@ -30,8 +29,8 @@ export const NAV_LINKS: Link[] = [
 ]
 
 export const SOCIAL_LINKS: Link[] = [
-  { href: 'https://github.com/jktrn', label: 'GitHub' },
+  { href: 'https://github.com/Sujal-Gaha', label: 'GitHub' },
   { href: 'https://twitter.com/enscry', label: 'Twitter' },
-  { href: 'jason@enscribe.dev', label: 'Email' },
+  { href: 'suzalgahamagar@gmailcom', label: 'Email' },
   { href: '/rss.xml', label: 'RSS' },
 ]
