@@ -1,0 +1,74 @@
+---
+title: 'Custom Express Async Handler'
+description: 'This post is written to teach you how to make your own custom async handler'
+date: 2024-10-01
+tags: ['backend', 'typescript', 'express', 'asynchronous']
+image: './2024.png'
+authors: ['Sujal']
+---
+
+Working with try catch everytime can be tedious and repetitive. We can use npm packages like `express-async-handler` but why bother installing third party packages when we can make our own custom express async handler.
+
+## 1. Example
+
+### 1.1. Custom express async handler (with Typescript)
+
+Create a `async-handler.ts` file and paste the code below.
+
+```ts
+import { Request, Response } from 'express'
+
+interface ErrorSchema {
+  // define your error schema here
+}
+
+const handleError = (res: Response, error: ErrorSchema) => {
+  // handle your error here
+}
+
+export const asyncHandler =
+  (fn: Function) => (req: Request, res: Response, next: Function) => {
+    Promise.resolve(fn(req, res, next)).catch((error) =>
+      handleError(res, error),
+    )
+  }
+```
+
+## 2. Explanation
+
+### Higher-order function:
+
+    - The **asyncHandler** is a function that takes another function **(fn)** as an argument and returns a new function.
+    - This new function will act as **middleware** in an Express route handler, expecting req, res, and next as parameters, which are typical for Express handlers.
+
+### fn argument:
+
+    - **fn** is a function that represents an **asynchronous** operation (like a route handler).
+    - It's expected to return a Promise. This could be anything like interacting with a database, making HTTP requests, or any asynchronous task within an Express route.
+
+### Executing the fn function:
+
+    - Inside the returned function, Promise.resolve(fn(req, res, next)) ensures that whatever **fn** returns is converted into a resolved or rejected promise.
+    - Even if **fn** is not explicitly returning a promise (e.g., a synchronous function), this ensures a consistent promise-based behavior.
+
+### Error handling:
+
+    - If **fn** throws an error or its returned promise rejects, .catch() will capture it.
+    - The catch block then invokes handleError(res, error), passing the error to a centralized error-handling function handleError (presumably defined elsewhere in the application). This prevents the need for writing repetitive try-catch blocks in each route handler.
+
+## 3. Use case example
+
+```ts
+const getAllProducts = asyncHandler(async (req: Request, res: Response) => {
+  const product = await ProductModel.find({}).limit(20)
+
+  const productResponse: TGetAllProducts = {
+    status: 200,
+    data: product,
+    success: true,
+    message: 'Fetched all the products successfully',
+  }
+
+  res.status(200).json(productResponse)
+})
+```
