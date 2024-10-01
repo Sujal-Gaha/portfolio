@@ -32,5 +32,5 @@ export const SOCIAL_LINKS: Link[] = [
   { href: 'https://github.com/Sujal-Gaha', label: 'GitHub' },
   { href: 'https://x.com/suzalgahamagar', label: 'Twitter' },
   { href: 'suzalgahamagar@gmailcom', label: 'Email' },
-  { href: '/https://www.instagram.com/suzal_magar.ts/', label: 'Instagram' },
+  { href: 'https://instagram.com/suzal_magar.ts', label: 'Instagram' },
 ]
