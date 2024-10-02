@@ -1,41 +1,45 @@
 ---
 title: 'Setup MERN app with TypeScript'
-description: 'This a post written to setup your MERN app with typescript supported environment'
+description: 'This blog contains a simple guide to setup your MERN app with typescript supported environment.'
 date: 2024-09-26
 tags:
   [
     'mern',
     'fullstack',
+    'frontend',
+    'backend',
     'typescript',
     'mongodb',
     'mongoose',
     'express',
-    'react',
+    'reactjs',
     'nodejs',
   ]
 image: './2024.png'
 authors: ['Sujal']
 ---
 
-This blog will guide you to setup your own mern app with typescript supported for better development experience.
+This blog will guide you on how to setup your own mern app with typescript supported for better development experience. It also shows how to properly structure your backend folder for convention.
 
 ## 1. Create the Main Project Directory:
 
+Replace the **[project-name]** with your actual project name.
+
 ```bash
-  mkdir [project-name]
-  cd [project-name]
+mkdir [project-name]
+cd [project-name]
 ```
 
 ## 2. Initialize the Root `package.json` File:
 
 ```bash
-  npm init -y
+npm init -y
 ```
 
-## 3. Create Directories for Backend and Frontend:
+## 3. Create Directory for Backend:
 
 ```bash
-  mkdir backend frontend
+mkdir backend
 ```
 
 ## 4. Set Up the Backend with Express and TypeScript:
@@ -43,29 +47,31 @@ This blog will guide you to setup your own mern app with typescript supported fo
 ### 4.1. Install the necessary backend dependencies:
 
 ```bash
-  cd backend
-  npm init -y
-  npm install express mongoose dotenv
-  npm install --save-dev typescript @types/node @types/express @types/mongoose ts-node
+cd backend
+npm init -y
+npm install express mongoose dotenv
+npm install --save-dev typescript @types/node @types/express @types/mongoose ts-node
 ```
 
 ### 4.2. Initialize TypeScript configuration for the backend:
 
 ```bash
-  npx tsc --init
+npx tsc --init
 ```
 
 ## 5. Set Up the Backend Folder Structure:
 
+This is just a common convention used for backend folders.
+
 ```bash
-  mkdir src
-  mkdir src/controllers src/models src/routes
-  touch src/index.ts
+mkdir src
+mkdir src/controllers src/models src/routes
+touch src/index.ts
 ```
 
 ## 6. Configure TypeScript for the Backend:
 
-### 6.1. Edit `tsconfig.json` to include:
+### 6.1. Edit `tsconfig.json` file to include:
 
 ```json
 {
@@ -96,27 +102,33 @@ dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 5000
+const MONGO_URI = process.env.MONGO_URI
 
-// Middleware
 app.use(express.json())
 
-// Routes
 app.get('/', (req, res) => {
   res.send('Hello, MERN App with Next.js!')
 })
 
-// MongoDB Connection
-mongoose
-  .connect(process.env.MONGODB_URI as string, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((err) => console.error('MongoDB connection error:', err))
+const connectDB = async () => {
+  try {
+    if (!MONGO_URI) {
+      throw new Error('The .env file doesnot have the mongo uri')
+    }
+    console.log('Connecting...')
+    await mongoose.connect(MONGO_URI)
+    console.log('Connected to the database')
+  } catch (error) {
+    console.log('Something went wrong while connecting to the database ', error)
+    process.exit(1)
+  }
+}
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`)
-})
+connectDB()
+  .then(() => {
+    app.listen(PORT, () => console.log('Server connected at port:', PORT))
+  })
+  .catch((error) => console.log('Error ', error))
 ```
 
 ## 8. Create Environment Variables for the Backend:
@@ -124,14 +136,14 @@ app.listen(PORT, () => {
 ### 8.1. Add your MongoDB URI and other environment variables:
 
 ```bash
-  touch .env
+touch .env
 ```
 
 ### 8.2. Add content to your `.env` file:
 
 ```env
-  MONGODB_URI=your-mongodb-uri
-  PORT=5000
+MONGO_URI=your-mongodb-uri
+PORT=5000
 ```
 
 ## 9. Add Backend Start Script to `backend/package.json`:
@@ -140,18 +152,24 @@ app.listen(PORT, () => {
 
 ```json
 {
+  // others
   "scripts": {
     "start": "ts-node src/index.ts"
   }
+  // others
 }
 ```
 
-## 10. Set Up the Frontend with Next.js and TypeScript:
+## 10. Set Up the Frontend with React.js with Vite and TypeScript:
 
 ```bash
-  cd ../frontend
-  npx create-next-app@latest . --typescript
+cd ..
+npm create vite@latest frontend -- --template react-ts --swc
+cd frontend
+npm install
 ```
+
+Ignore all the command suggestion in the terminal that comes after this.
 
 ## 11. Configure the Root `package.json` File:
 
@@ -165,27 +183,31 @@ app.listen(PORT, () => {
   "license": "MIT",
   "scripts": {
     "dev:backend": "cd backend && npm start",
-    "dev:frontend": "cd frontend && npm run dev",
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\""
-  },
-  "devDependencies": {
-    "concurrently": "^8.2.0"
+    "dev:frontend": "cd frontend && npm run dev"
   }
 }
 ```
 
 ## 12. Run the Application:
 
-### 12.1. Run Backend:
+Now your application is ready and to run your application:
+
+### 12.1. Navigate back to the root:
 
 ```bash
-  npm run dev:backend
+cd ..
 ```
 
-### 12.2. Run Frontend:
+### 12.2. Run Backend:
 
 ```bash
-  npm run dev:frontend
+npm run dev:backend
+```
+
+### 12.3. Run Frontend:
+
+```bash
+npm run dev:frontend
 ```
 
 ## 13. Your Project Structure Should Look Like:
@@ -202,9 +224,8 @@ app.listen(PORT, () => {
     │   ├── package.json
     │   └── tsconfig.json
     ├── frontend/
-    │   ├── pages/
     │   ├── public/
-    │   ├── styles/
+    │   ├── src/
     │   ├── tsconfig.json
     │   └── package.json
     ├── node_modules/
