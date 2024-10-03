@@ -14,7 +14,7 @@ export type Link = {
 
 export const SITE: Site = {
   TITLE: 'Sujal Magar',
-  DESCRIPTION: 'I am a Fullstack MERN developer with 2+ years of experience',
+  DESCRIPTION: 'I am a Fullstack developer with 2+ years of experience. ',
   EMAIL: 'suzalgahamagar@gmail.com',
   NUM_POSTS_ON_HOMEPAGE: 2,
   POSTS_PER_PAGE: 3,
