@@ -1,0 +1,278 @@
+---
+title: 'Create a Full-Stack App with Vite, Express, Prisma with TS'
+description: 'Learn to build a full-stack app using TypeScript, React, Express, and Prisma with a unified workflow.'
+date: 2024-11-7
+tags:
+  [
+    'fullstack',
+    'frontend',
+    'backend',
+    'typescript',
+    'express',
+    'reactjs',
+    'prisma',
+    'postgresql',
+    'setup',
+  ]
+image: './2024.png'
+authors: ['sujal']
+---
+
+## Step 1: Setting Up the Root Directory
+
+### 1. **Initialize the Project Root Folder**
+
+First, create the project folder, navigate into it, and initialize `package.json`.
+
+```bash
+mkdir fullstack-ts-app
+cd fullstack-ts-app
+npm init -y
+```
+
+### 2. **Install Root-Level Dev Dependencies**
+
+We’ll add `concurrently` to run both frontend and backend servers in parallel, and `typescript` to manage shared TypeScript configurations.
+
+```bash
+npm install -D concurrently typescript
+```
+
+---
+
+## Step 2: Setting Up the Backend
+
+### 1. **Create Backend Folder**
+
+Inside the project root, create a `backend` folder and navigate into it.
+
+```bash
+mkdir backend
+cd backend
+```
+
+### 2. **Initialize Backend with TypeScript**
+
+Run `npm init` in `backend` and install backend-specific dependencies.
+
+```bash
+npm init -y
+npm install express prisma @prisma/client dotenv
+npm install -D typescript ts-node @types/node @types/express nodemon
+```
+
+### 3. **Initialize Prisma**
+
+Set up Prisma and create a basic database schema.
+
+```bash
+npx prisma init
+```
+
+### 4. **Configure `.env`**
+
+In the backend directory, Prisma has created a `.env` file. Update the `DATABASE_URL` as needed for your database.
+
+```env
+DATABASE_URL="postgresql://username:password@localhost:5432/mydb?schema=public"
+```
+
+### 5. **Define Database Schema in `schema.prisma`**
+
+Update `backend/prisma/schema.prisma` as follows:
+
+```prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id    Int    @id @default(autoincrement())
+  name  String
+  email String @unique
+  posts Post[]
+}
+
+model Post {
+  id      Int    @id @default(autoincrement())
+  title   String
+  content String
+  userId  Int
+  user    User   @relation(fields: [userId], references: [id])
+}
+```
+
+### 6. **Run Prisma Migration**
+
+Now, migrate the database:
+
+```bash
+npx prisma migrate dev --name init
+```
+
+### 7. **Set Up TypeScript**
+
+In `backend`, create `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "commonjs",
+    "rootDir": "src",
+    "outDir": "dist",
+    "strict": true,
+    "esModuleInterop": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"]
+}
+```
+
+### 8. **Organize Code Structure**
+
+In `backend`, create the following structure and files:
+
+```css
+backend
+├── prisma
+├── src
+│   ├── controllers
+│   │   └── userController.ts
+│   ├── routes
+│   │   └── userRoutes.ts
+│   ├── models
+│   ├── server.ts
+└── tsconfig.json
+```
+
+### 9. **Create Server** (`src/server.ts`)
+
+```ts
+import express from 'express'
+import dotenv from 'dotenv'
+import userRoutes from './routes/userRoutes'
+
+dotenv.config()
+const app = express()
+const port = process.env.PORT || 5000
+
+app.use(express.json())
+app.use('/api/users', userRoutes)
+
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`)
+})
+```
+
+### 10. **Controllers** (`src/controllers/userController.ts`)
+
+```ts
+import { Request, Response } from 'express'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
+export const getUsers = async (req: Request, res: Response) => {
+  const users = await prisma.user.findMany({
+    include: {
+      posts: true,
+    },
+  })
+  res.json(users)
+}
+
+export const createUser = async (req: Request, res: Response) => {
+  const { name, email } = req.body
+  const user = await prisma.user.create({
+    data: { name, email },
+  })
+  res.json(user)
+}
+```
+
+### 11. **Routes** (`src/routes/userRoutes.ts`)
+
+```ts
+import { Router } from 'express'
+import { getUsers, createUser } from '../controllers/userController'
+
+const router = Router()
+
+router.get('/', getUsers)
+router.post('/', createUser)
+
+export default router
+```
+
+### 12. **Configure Backend Scripts**
+
+    In `backend/package.json`, add the following scripts:
+
+```json
+"scripts": {
+  "build": "tsc",
+  "dev": "nodemon src/server.ts"
+}
+```
+
+---
+
+## Step 3: Setting Up the Frontend
+
+### 1. **Create Frontend Vite React App **
+
+Go back to the project root
+
+```bash
+cd ..
+npm create vite@latest frontend -- --template react-ts --swc
+```
+
+### 2. **Configure Frontend Scripts**
+
+Add a proxy in `frontend/package.json`:
+
+```json
+"proxy": "http://localhost:5000",
+```
+
+---
+
+## Step 4: Root-Level Configuration for Development Scripts
+
+### 1. **Update Root `package.json`**
+
+Go to the root `package.json` and add scripts to run frontend and backend servers independently:
+
+```json
+"scripts": {
+  "dev:backend": "npm --prefix backend run dev",
+  "dev:frontend": "npm --prefix frontend run dev",
+  "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+  "build:backend": "npm --prefix backend run build",
+  "build:frontend": "npm --prefix frontend run build",
+  "build": "concurrently \"npm run build:backend\" \"npm run build:frontend\""
+}
+```
+
+### 2. **Run the Servers**
+
+Use these commands to start each server independently or concurrently:
+
+```bash
+npm run dev:backend      # Starts the backend
+npm run dev:frontend     # Starts the frontend
+npm run dev              # Runs both concurrently
+```
+
+---
+
+## Conclusion
+
+This setup organizes the backend into models, controllers, and routes and connects it seamlessly with a React frontend. Now you have a robust, maintainable, full-stack TypeScript application!
