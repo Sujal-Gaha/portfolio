@@ -18,7 +18,7 @@ export const SITE: Site = {
   EMAIL: 'suzalgahamagar@gmail.com',
   NUM_POSTS_ON_HOMEPAGE: 2,
   POSTS_PER_PAGE: 3,
-  SITEURL: 'https://sujalgahamagar.netlify.app/',
+  SITEURL: 'https://sujalgahamagar.com.np/',
 }
 
 export const NAV_LINKS: Link[] = [
@@ -31,6 +31,6 @@ export const NAV_LINKS: Link[] = [
 export const SOCIAL_LINKS: Link[] = [
   { href: 'https://github.com/Sujal-Gaha', label: 'GitHub' },
   { href: 'https://x.com/suzalgahamagar', label: 'Twitter' },
-  { href: 'suzalgahamagar@gmailcom', label: 'Email' },
+  { href: 'suzalgahamagar@gmail.com', label: 'Email' },
   { href: 'https://linkedin.com/in/sujal-magar-382889287/', label: 'LinkedIn' },
 ]
