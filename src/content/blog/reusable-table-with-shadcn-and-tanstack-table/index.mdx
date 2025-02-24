@@ -45,7 +45,7 @@ Install @types/node first:
 npm install --save-dev @types/node
 ```
 
-Go to `vite.config.ts` file and set the configuration
+Go to `vite.config.ts` file and set the configuration:
 
 ```ts
 import path from 'path'
@@ -139,7 +139,7 @@ npx shadcn@latest add button table pagination
 
 ### 2.2. @TanStack/react-table:
 
-#### 2.2.1 Install @TanStack/react-table
+#### 2.2.1 Install @TanStack/react-table:
 
 ```bash
 npm install @tanstack/react-table
@@ -244,7 +244,12 @@ const PaginationComponent = ({
 interface TableComponentProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
-  pageSize?: number
+  pagination?: {
+    page: number
+    perPage: number
+    totalPages: number
+    onPageChange: (page: number) => void
+  }
   sorting?: SortingState
   setSorting?: React.Dispatch<React.SetStateAction<SortingState>>
 }
@@ -252,7 +257,7 @@ interface TableComponentProps<TData, TValue> {
 export const TableComponent = <TData, TValue>({
   columns,
   data,
-  pageSize = 10,
+  pagination,
   sorting,
   setSorting,
 }: TableComponentProps<TData, TValue>) => {
@@ -260,11 +265,22 @@ export const TableComponent = <TData, TValue>({
     data: data,
     columns: columns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    ...(pagination
+      ? {
+          getPaginationRowModel: getPaginationRowModel(),
+          state: {
+            pagination: {
+              pageIndex: pagination.page - 1,
+              pageSize: pagination.perPage,
+            },
+          },
+          manualPagination: true,
+          pageCount: pagination.totalPages,
+        }
+      : {}),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
-    initialState: { pagination: { pageSize: pageSize } },
-    ...(sorting ? { state: { sorting: sorting } } : null),
+    ...(sorting ? { state: { sorting: sorting } } : {}),
   })
 
   return (
@@ -337,97 +353,103 @@ export const TableComponent = <TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <PaginationComponent
-          currentPage={table.getState().pagination.pageIndex + 1}
-          totalPages={table.getPageCount()}
-          onPageChange={(page) => table.setPageIndex(page - 1)}
-        />
-      </div>
+      {pagination && (
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <PaginationComponent
+            currentPage={pagination.page}
+            totalPages={pagination.totalPages}
+            onPageChange={pagination.onPageChange}
+          />
+        </div>
+      )}
     </div>
   )
 }
 ```
 
-## 4. Example
+## 4. Example:
 
 ```tsx
+import { useState } from 'react'
 import './App.css'
 import { TableComponent } from './components/tablecomponent'
 import { ColumnDef } from '@tanstack/react-table'
 
-type TBook = {
+interface User {
   id: number
-  title: string
-  author: string
-  published_date: string
+  name: string
+  email: string
+  role: string
 }
 
-const columns: ColumnDef<TBook>[] = [
+const columns: ColumnDef<User>[] = [
   {
-    accessorKey: 'title',
-    header: 'Title',
+    accessorKey: 'name',
+    header: 'Name',
     cell: (info) => {
-      const title = info.row.original.title
-      return <div>{title}</div>
+      const name = info.row.original.name
+      return <div>{name}</div>
     },
     enableSorting: false,
   },
   {
-    accessorKey: 'author',
-    header: 'Author',
+    accessorKey: 'email',
+    header: 'Email',
     cell: (info) => {
-      const author = info.row.original.author
-      return <div>{author}</div>
+      const email = info.row.original.email
+      return <div>{email}</div>
     },
     enableSorting: false,
   },
   {
-    accessorKey: 'published_date',
-    header: 'Published Date',
+    accessorKey: 'role',
+    header: 'Role',
     cell: (info) => {
-      const date = info.row.original.published_date
-      return <div>{date}</div>
+      const role = info.row.original.role
+      return <div>{role}</div>
     },
     enableSorting: false,
   },
 ]
 
-const data: TBook[] = [
-  {
-    id: 1,
-    title: 'The Great Gatsby',
-    author: 'F. Scott Fitzgerald',
-    published_date: '1925-04-10',
-  },
-  {
-    id: 2,
-    title: '1984',
-    author: 'George Orwell',
-    published_date: '1949-06-08',
-  },
-  {
-    id: 3,
-    title: 'To Kill a Mockingbird',
-    author: 'Harper Lee',
-    published_date: '1960-07-11',
-  },
-  {
-    id: 4,
-    title: 'Moby-Dick',
-    author: 'Herman Melville',
-    published_date: '1851-10-18',
-  },
-  {
-    id: 5,
-    title: 'War and Peace',
-    author: 'Leo Tolstoy',
-    published_date: '1869-01-01',
-  },
-]
+const generateUsers = (count: number): User[] => {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i + 1,
+    name: `User ${i + 1}`,
+    email: `user${i + 1}@example.com`,
+    role: i % 3 === 0 ? 'Admin' : i % 3 === 1 ? 'Editor' : 'Viewer',
+  }))
+}
 
 function App() {
-  return <TableComponent columns={columns} data={data} pageSize={2} />
+  const [data] = useState<User[]>(() => generateUsers(50))
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(10)
+
+  const totalPages = Math.ceil(data.length / itemsPerPage)
+
+  const getCurrentPageData = () => {
+    const start = (currentPage - 1) * itemsPerPage
+    const end = start + itemsPerPage
+    return data.slice(start, end)
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  return (
+    <TableComponent
+      columns={columns}
+      data={getCurrentPageData()}
+      pagination={{
+        page: currentPage,
+        perPage: itemsPerPage,
+        totalPages: totalPages,
+        onPageChange: handlePageChange,
+      }}
+    />
+  )
 }
 
 export default App
