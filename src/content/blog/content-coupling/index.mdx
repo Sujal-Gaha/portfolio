@@ -15,7 +15,7 @@ Content coupling, also known as "Pathological Coupling," **occurs when one modul
 
 1. **Breaks Encapsulation**: When one module directly accesses another's internal data, any changes in the internal structure require modifications in all dependent modules.
 
-2. **Increases Maintenenace Effort**: Developers must track changes across multiple modules, making updates cumbersome and error-prone.
+2. **Increases Maintenance Effort**: Developers must track changes across multiple modules, making updates cumbersome and error-prone.
 
 3. **Reduces Reusability**: A tightly coupled module cannot be easily reused in other systems without also including the dependent module.
 
@@ -82,7 +82,7 @@ Regardless of language, the key issue remains: **modules should not directly alt
 
 ### How to Fix Content Coupling?
 
-The best way to resolve contente coupling is to enforce **proper encapsulation**. Instead of exposing internal state, provide well-defined methods to modify and retrieve data safely.
+The best way to resolve content coupling is to enforce **proper encapsulation**. Instead of exposing internal state, provide well-defined methods to modify and retrieve data safely.
 
 #### Solution: Exposing Only Necessary Methods
 
