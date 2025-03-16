@@ -40,10 +40,10 @@ Consider this example in Python:
 ```py
 class Database:
     def __init__(self):
-        self.__data = "Sensitive Data" # Private-like variable (by convention)
+        self._data = "Sensitive Data" # Private-like variable (by convention)
 
     def update_data(self, new_data: str):
-        self.__data = new_data
+        self._data = new_data
 
 class Service:
     def __init__(self, db: Database):
@@ -51,7 +51,7 @@ class Service:
 
     def modify_database_directly(self):
         # Bad: Directly modifying another module's private content.
-        self.db.__data = "Modified Data"
+        self.db._data = "Modified Data"
 ```
 
 Similar issues exist in other languages:
@@ -62,7 +62,7 @@ Similar issues exist in other languages:
 class Database {
   private data: string = 'Sensitive Data'
 
-  updateDate(newData: string) {
+  updateData(newData: string) {
     this.data = newData
   }
 }
@@ -91,13 +91,13 @@ The best way to resolve content coupling is to enforce **proper encapsulation**.
 ```py
 class SecureDatabase:
     def __init__(self):
-        self.__data = "Secure Data"
+        self._data = "Secure Data"
 
     def update_data(self, new_data: str):
-        self.__data = new_data
+        self._data = new_data
 
     def get_data(self):
-        return self.__data
+        return self._data
 
 class SecureService:
     def __init__(self, db: SecureDatabase):
