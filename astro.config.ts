@@ -16,7 +16,6 @@ import remarkMath from 'remark-math'
 import remarkToc from 'remark-toc'
 import sectionize from '@hbsnow/rehype-sectionize'
 import icon from 'astro-icon'
-import netlify from '@astrojs/netlify'
 
 // https://astro.build/config
 export default defineConfig({
@@ -65,5 +64,4 @@ export default defineConfig({
     enabled: false,
   },
   output: 'static',
-  adapter: netlify(),
 })
