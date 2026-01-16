@@ -2,7 +2,7 @@
 title: 'Content Coupling'
 description: 'Everything about content coupling, how to detect it and the solution for it'
 date: 2025-03-10
-tags: ['coupling', 'python', 'typescript']
+tags: ['coupling', 'python']
 image: './2025.png'
 authors: ['sujal']
 ---
@@ -38,45 +38,21 @@ To detect content coupling in your codebase, look for:
 Consider this example in Python:
 
 ```py
-class Database:
+class UnsafeDatabase:
     def __init__(self):
-        self._data = "Sensitive Data" # Private-like variable (by convention)
+        self._data = "Sensitive Data"
 
     def update_data(self, new_data: str):
         self._data = new_data
 
 class Service:
-    def __init__(self, db: Database):
+    def __init__(self, db: UnsafeDatabase):
         self.db = db
 
     def modify_database_directly(self):
         # Bad: Directly modifying another module's private content.
         self.db._data = "Modified Data"
 ```
-
-Similar issues exist in other languages:
-
-**TypeScript (Bad Example)**:
-
-```ts
-class Database {
-  private data: string = 'Sensitive Data'
-
-  updateData(newData: string) {
-    this.data = newData
-  }
-}
-
-class Service {
-  constructor(private db: Database) {}
-
-  modifyDatabaseDirectly() {
-    this.db.data = 'Modified Data Data' // Bad: Directly Access
-  }
-}
-```
-
-Regardless of language, the key issue remains: **modules should not directly alter each other's internals.**
 
 ---
 
@@ -86,7 +62,7 @@ The best way to resolve content coupling is to enforce **proper encapsulation**.
 
 #### Solution: Exposing Only Necessary Methods
 
-**Python Solution**:
+**Solution**:
 
 ```py
 class SecureDatabase:
@@ -105,30 +81,6 @@ class SecureService:
 
     def modify_data_safely(self, new_data: str):
         self.db.update_data(new_data)
-```
-
-**TypeScript Solution**:
-
-```ts
-class SecureDatabase {
-  private data: string = 'Secure Data'
-
-  updateData(newData: string) {
-    this.data = newData
-  }
-
-  getData() {
-    return this.data
-  }
-}
-
-class SecureService {
-  constructor(private db: SecureDatabase) {}
-
-  modifyDataSafely(newData: string) {
-    this.db.updateData(newData)
-  }
-}
 ```
 
 ### Other Best Practices to Avoid Content Coupling
