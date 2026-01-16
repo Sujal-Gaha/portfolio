@@ -1,0 +1,109 @@
+---
+title: 'Common Coupling'
+description: 'Everything about common coupling, how to detect it and the solution for it'
+date: 2026-01-16
+tags: ['coupling', 'python']
+image: './2025.png'
+authors: ['sujal']
+---
+
+## What is Common Coupling?
+
+**Common coupling** occurs when **two or more modules share and access the same global data** (such as global variables, shared static fields, or common data structures). All modules that use this shared global data become interdependent through this common environment.
+
+This type of coupling is weaker than content coupling but still considered quite strong and problematic in most cases, as changes to the shared data can unexpectedly affect many parts of the system.
+
+### Why is Common Coupling Bad?
+
+1. **Uncontrolled Side Effects & Error Propagation** — A change (or bug) in how one module uses or modifies the global data can break unrelated modules that also depend on it.
+2. **Difficult Debugging & Reasoning** — It's hard to trace where and how the global data is being modified, leading to unpredictable behavior.
+3. **Reduced Modularity & Reusability** — Modules that rely on specific global data cannot be easily extracted and reused in another context without bringing the global state along.
+4. **Maintenance Nightmare** — Renaming, refactoring, or changing the structure/type of the global data requires reviewing and potentially updating every module that uses it.
+5. **Testing Challenges** — Unit tests become harder because modules are not isolated — global state can cause tests to interfere with each other.
+
+### Detecting Common Coupling
+
+Look for these red flags in your codebase:
+
+- Use of **global variables** or module-level variables accessed/modified by multiple unrelated modules
+- **Static mutable fields** in classes that act as implicit globals
+- Shared mutable configuration objects, caches, or state stores passed implicitly
+- Heavy reliance on environment variables, singletons with mutable state, or thread-local storage used across modules
+
+Consider this example in Python:
+
+```python
+# Global shared state (bad practice)
+app_config = {
+    "debug_mode": False,
+    "api_key": "xyz123",
+    "max_retries": 3
+}
+
+class Logger:
+    def log(self, message: str):
+        if app_config["debug_mode"]:
+            print(f"[DEBUG] {message}")
+        else:
+            print(message)
+
+class ApiClient:
+    def fetch_data(self):
+        retries = app_config["max_retries"]
+        key = app_config["api_key"]
+        # ... use key and retries ...
+        app_config["max_retries"] += 1  # Side effect: modifies global state!
+```
+
+Here, `Logger` and `ApiClient` (and potentially many other modules) are **commonly coupled** through `app_config`.
+
+### How to Fix Common Coupling?
+
+The preferred solution is to **eliminate or minimize shared mutable global state** by passing dependencies explicitly (dependency injection) and favoring **immutable configuration** when possible.
+
+#### Solution: Pass Dependencies Explicitly
+
+```python
+from dataclasses import dataclass
+from typing import Dict
+
+@dataclass(frozen=True)  # Makes it immutable — even safer
+class AppConfig:
+    debug_mode: bool = False
+    api_key: str = "xyz123"
+    max_retries: int = 3
+
+class Logger:
+    def __init__(self, config: AppConfig):
+        self.config = config
+
+    def log(self, message: str):
+        if self.config.debug_mode:
+            print(f"[DEBUG] {message}")
+        else:
+            print(message)
+
+class ApiClient:
+    def __init__(self, config: AppConfig):
+        self.config = config
+
+    def fetch_data(self):
+        retries = self.config.max_retries
+        key = self.config.api_key
+        # No side effects on shared state!
+```
+
+Now modules depend only on the injected `config` instance — no global access.
+
+### Other Best Practices to Avoid Common Coupling
+
+1. **Use Dependency Injection** — Pass required data/configurations via constructors or parameters.
+2. **Prefer Immutable Data** — Use frozen dataclasses, `const` equivalents, or read-only views.
+3. **Avoid Global Variables** — Almost always a sign of common coupling (except for true constants).
+4. **Encapsulate Shared State** — If shared mutable state is truly needed, wrap it in a dedicated service class with controlled access methods.
+5. **Use Context Objects / Scoped State** — Pass a context object down the call chain instead of relying on globals.
+6. **Favor Functional Style** — Where possible, write pure functions that take inputs and return outputs without side effects.
+
+By eliminating unnecessary global state and passing dependencies explicitly, you create a more **predictable**, **testable**, and **maintainable** system with **low coupling** overall.
+
+Always aim for modules to communicate through **explicit parameters and well-defined interfaces** rather than implicitly shared global data.
