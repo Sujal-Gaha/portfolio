@@ -1,0 +1,84 @@
+---
+title: 'Learn Git Fundamentals'
+description: 'Everything about staging, committing, branching, merging, stashing, and pull requests'
+date: 2026-01-19
+tags: ['git']
+image: './2026.png'
+authors: ['sujal']
+---
+
+Git is a version control system that records snapshots of your code at different points in time. Each snapshot (called a commit) is a complete (and separate) version of your project. You might have one version with a login feature and another without. Git lets you manage, switch between, merge, or revert to any of these versions reliably.
+
+## Staging
+
+Staging is like preparing your changes before you save them permanently. It is a way to select which files or modifications you want to include in your next commit (or snapshot). Think of it as a "holding area" where you review and organize your work without committing everything at once.
+
+- **Why use it?** It helps you commit only specific changes, keeping your history clean and organized.
+- **Basic commands:**
+  - `git add <file or path/to/file>`: Add a specific file to the staging area. (e.g., `git add main.py` to stage changes in that file.)
+  - `git add .`: Add all modified files in the current directory to the staging area.
+  - `git status`: Check what has been staged, modified, or untracked.
+  - `git reset <file or path/to/file>`: Remove a file from the staging area without losing changes.
+  - `git reset .`: Remove all the files from the staging area without losing changes.
+
+
+## Committing
+
+Committing is saving your staged changes to the project's history. Each commit is like a snapshot of your project at that point, with a message describing what changed. It is permanent in Git's history but can be undone if needed.
+
+- **Why use it?** It creates a record of your progress, making it easy to revert or track changes over time.
+- **Basic commands:**
+  - `git commit -m "Your Message Here"`: Create a commit with a short message (usually describing the changes made).
+  - `git commit --amend`: Edit the last commit's message or add forgotten changes to the previous commit.
+  - `git log`: View your commit history.
+
+
+## Branching
+
+Branching lets you create separate lines of development in your project. The main branch (often called "main" or "master") is your primary codebase, and branches allow you to work on features, fixes, or experiments without affecting the main code.
+
+- **Why use it?** It supports parallel work, like developing a new feature while fixing bugs on another branch.
+- **Basic commands:**
+  - `git branch`: Lists all the branches.
+  - `git branch <branch-name>`: Create a new branch. (e.g., `git branch feat-login`)
+  - `git checkout <branch-name>`: Switch to a branch. (Only works for existing branch)
+  - `git checkout -b <branch-name>`: Create and switch to a new branch in one step.
+  - `git branch -d <branch-name>`: Delete a branch (only if merged).
+  - `git branch -D <branch-name>`: Delete a branch (even if not merged).
+  - `git switch <branch-name>`: Switch to a branch.
+
+
+## Merging
+
+Merging combines changes from one branch into another. This is how you integrate work from a feature branch back into the main branch after the feature is ready.
+
+- **Why use it?** It brings together different lines of development, resolving any conflicts if changes overlap.
+- **Basic commands:**
+  - `git merge <branch-name>`: Merge the specified branch into your current branch. (e.g., From main: `git merge feat-login`)
+  - `git merge --abort`: Stop a merge if there are conflicts you can't resolve right away (this command can save your life).
+
+
+## Stashing
+ 
+Stashing temporarily saves your uncommitted changes so you can switch branches or work on something else without committing. It is like putting your work on a shelf to come back later.
+
+- **Why use it?** Useful when you are in the middle of something but need to quickly switch contexts, like fixing an urgent bug.
+- **Basic commands:**
+  - `git stash`: Saves your changes to a stash (hides them from your working directory).
+  - `git stash list`: Lists all the stashes.
+  - `git stash apply`: Bring back the latest stash to your working directory.
+  - `git stash apply stash@{n}`: Bring back the stash with index `n` (e.g., `git stash apply stash@{0}` brings back the first or latest stash.)
+  - `git stash drop`: Delete the latest stash.
+  - `git stash pop`: Apply and delete the latest stash in one step.
+
+
+## Pull Requests
+
+A pull request (or PR for short) is a way to propose changes from one branch to another, often in a remote repository (e.g., GitHub). It is not a core git command but a feature of hosting platforms. It allows team review, discussion, and approval before merging.
+
+- **Why use it?** It promotes collaboration, code reviews, and catching issues early in a team setting.
+- **Basic process (using Git commands + platform UI):
+  - First, push your branch to remote: `git push origin <branch-name>` (e.g., `git push origin feat-login`).
+  - On the platform (e.g., GitHub), create a PR from your branch to the target or base branch (usually main).
+  - To fetch and merge an approved PR locally: `git pull origin main` (after it has been merged remotely).
+  - Related git commands: `git fetch` (update local info from remote, basically sync your local branch with the remote branch), `git pull` (fetch and merge).
