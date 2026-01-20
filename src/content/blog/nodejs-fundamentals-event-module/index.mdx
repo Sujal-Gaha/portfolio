@@ -1,0 +1,75 @@
+---
+title: 'Node.js Fundamentals - Event Module'
+description: 'Fundamentals of Event Module'
+date: 2026-01-20
+tags: ['nodejs', 'javascript']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## Event Module
+
+Node.js is event-driven. The `EventEmitter` class lets you create, emit, and listen for custom events. Many build-in modules (like HTTP) use it internally.
+
+### Key Concepts
+
+- **Emitter**: Object that emits events.
+- **Listener**: Function that runs when event is emitted.
+- **Events**: Named signals (strings like "click" or "data").
+- **Once vs.On**: `on` listens everytime whereas `once` listens only once.
+
+### Common Commands
+
+Import and create an instance as:
+
+```js
+import { EventEmitter } from 'events'
+
+const myEmitter = new EventEmitter()
+```
+
+1. **Listen for an Event**:
+
+```js
+myEmitter.on('greet', (name) => {
+  console.log(`Hello, ${name}`)
+})
+```
+
+- Explanation: Sets up listener for **"greet"** event.
+
+2. **Emit and Event**:
+
+```js
+myEmitter.emit('greet', 'John')
+```
+
+- Explanation: Triggers the event, passing "John" to listener. Outputs: "Hello, John"
+
+3. **Listen Once**:
+
+```js
+myEmitter.once('once-event', () => {
+  console.log('This runs only once')
+})
+
+myEmitter.emit('once-event') // Runs
+myEmitter.emit('once-event') // Ignored
+```
+
+- Explanation: Stops listening.
+
+4. **Remove Listener**:
+
+```js
+function listener() {
+  console.log('Event')
+}
+
+myEmitter.on('event', listener)
+myEmitter.removeListener('event', listener)
+```
+
+- Explanation: Stops listening.
+
+Events are async and non-blocking.
