@@ -1,0 +1,71 @@
+---
+title: 'Node.js Fundamentals - Stream Module'
+description: 'Fundamentals of Stream Module'
+date: 2026-01-20
+tags: ['nodejs', 'javascript']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## Stream Module
+
+Streams handle data in chunks (like reading a large file without loading it all into memory). Useful for files, networks, or big data. There are four types: Readable, Writable, Duplex (both Readable & Writable), Transform (modify data).
+
+### Key Concepts
+
+- **Readable Stream**: Data source (eg., reading file)
+- **Writable Stream**: Data destination (e.g., writing file).
+- **Piping**: Connect readable to writable easily.
+- **Events**: Like "data" (new chunk), "end" (done), "error".
+- **Buffering**: Data comes in small pieces (default 64KB for files).
+
+### Common Commands
+
+Include `import * as fs from "fs";` (fs has stream methods).
+
+1. **Readable Stream** (Read file in chunks):
+
+```js
+const readStream = fs.createReadStream('largefile.txt', 'utf8')
+readStream.on('data', (chunk) => {
+  console.log(chunk)
+})
+readStream.on('end', () => {
+  console.log('Done reading')
+})
+```
+
+- Explanation: Reads file bit by bit.
+
+2. **Writable Stream** (Write to file):
+
+```js
+const writeStream = fs.createWriteStream('output.txt')
+writeStream.write('Some data\n')
+writeStream.write('More data')
+writeStream.end()
+```
+
+- Explanation: Writes chunks to file.
+
+3. **Piping** (Copy file):
+
+```js
+const readStream = fs.createReadStream('source.txt')
+const writeStream = fs.createWriteStream('destination.txt')
+readStream.pipe(writeStream)
+```
+
+- Explanation: Automatically sends from read to write.
+
+4. **Transform Stream** (e.g., compress with zlib, built-in module):
+
+```js
+import * as zlib from 'zlib'
+
+fs.createReadStream('file.txt')
+  .pipe(zlib.createGzip())
+  .pipe(fs.createWriteStream('file.txt.gz'))
+```
+
+- Explanation: Reads, compresses, writes gzipped file.
