@@ -1,0 +1,323 @@
+---
+title: 'ExpressJS Fundamentals'
+description: 'Fundamentals of ExpressJS'
+date: 2026-01-20
+tags: ['expressjs', 'javascript', 'nodejs']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## ExpressJS
+
+ExpressJS is a popular web framework for Node.js that makes it easier to build web applications and APIs. It's lightweight, flexible, and handles things like routing, HTTP requests, and responses. To get started, install it from npm or yarn.
+
+```bash
+npm install express
+# or
+yarn add express
+```
+
+### Create a basic server
+
+```js
+// main.js
+import express from 'express'
+
+const PORT = 3000
+
+const app = express()
+
+app.get('/', (req, res) => {
+  res.send('Hello from the ExpressJS server')
+})
+
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`)
+})
+```
+
+Run it with `node main.js`. This sets up a simple server that responds with "Hello from the ExpressJS server" when you visit `http://localhost:3000` in your browser.
+
+### Add one more route
+
+```js
+app.get('/about', (req, res) => {
+  res.send('About use page')
+})
+
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`)
+})
+```
+
+Now try visiting `http://localhost:3000/about`
+
+### Return JSON (most common for APIs)
+
+```js
+// parse JSON bodies to json format
+// Important for POST/PUT requests
+app.use(express.json())
+
+app.get('/api/users', (req, res) => {
+  res.json([
+    { id: 1, name: 'John', role: 'user' },
+    { id: 2, name: 'Doe', role: 'admin' },
+  ])
+})
+
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`)
+})
+```
+
+---
+
+## Middleware in ExpressJS
+
+Middleware are functions that run between the request and response They can modify requests/responses, end the cycle, or pass control to the next middleware. Think of them as filters or plugins.
+
+- Build-in middleware: Express has some like `express.json()` for parsing JSON bodies.
+
+```js
+app.use(express.json())
+```
+
+- Custom middleware: A simple logger middleware in `middleware/logger.js`.
+
+```js
+// middleware/logger.js
+export const logger = (req, res, next) => {
+  console.log(`${req.method} | ${req.url}`)
+
+  next() // Pass to next middleware or route
+}
+
+// main.js
+import { logger } from './middleware/logger'
+
+app.use(logger) // Applies to all routes
+```
+
+- Third-party: Like `cors` for cross-origin requests (`npm install cors` or `yarn add cors`)
+
+```js
+import cors from 'cors'
+
+app.use(cors())
+```
+
+Middleware runs in order, so place global ones (like logging) at the top.
+
+---
+
+## Validation in ExpressJS
+
+Validation checks if user input (e.g., form data) is correct before processing. It prevents bad data from causing errors. Use libraries like `zod` or `express-validator`.
+
+```js
+// Define the schema
+const userSchema = z.object({
+  name: z.string().min(2).max(50),
+  email: z.string().email(),
+})
+
+// Validation middleware
+function validateBody(schema) {
+  return (req, res, next) => {
+    try {
+      // .parse() → throws on error
+      req.validated = schema.parse(req.body)
+      next()
+    } catch (error) {
+      // Zod gives very good error messages
+      return res.status(400).json({
+        error: 'Validation failed',
+        issues: error.errors, // ← most useful part
+        // received: req.body           // optional – good for debugging
+      })
+    }
+  }
+}
+
+app.post('/users', validateBody(userSchema), (req, res) => {
+  // req.validated is already typed & safe
+  const user = req.validated
+
+  // Handle data here
+
+  res.status(201).json({
+    message: 'User created',
+    user,
+  })
+})
+```
+
+This checks the request body and returns errors if invalid.
+
+## Error Handling
+
+Error handling catches and responds to issues like database failures or invalid routes. Express has a default handler, but customize it for better control.
+
+### Basic error middleware
+
+Add at the end of your app (after all routes).
+
+```js
+app.use((error, req, res, next) => {
+  console.error(error.stack)
+  res.status(500).send('Something went wrong!')
+})
+```
+
+### Throwing errors
+
+In routes or controllers
+
+```js
+app.get('/error', (req, res, next) => {
+  next(new Error('Test error')) // Passes to error handler
+})
+```
+
+### Async errors
+
+For promises, use a wrapper like below:
+
+```js
+const asyncHandler = (fn) => (req, res, next) =>
+  Promise.resolve(fn(req, res, next)).catch(next)
+
+app.get(
+  '/async',
+  asyncHandler(async (req, res) => {
+    throw new Error('Async error')
+  }),
+)
+```
+
+This ensures errors are caught and handled gracefully.
+
+---
+
+## Logging in ExpressJS
+
+Logging records what happens in your app (e.g., requests, errors) for debugging and monitoring. Use libraries like `pino`, and `pino-http`.
+
+```js
+// logger.js
+import pinoLogger from 'pino'
+import pinoHttp from 'pino-http'
+
+export const logger =
+  process.env['ENVIRONMENT'] === 'dev'
+    ? pinoLogger({
+        level: process.env['PINO_LOG_LEVEL'],
+        transport: {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+          },
+        },
+      })
+    : pinoLogger({
+        level: process.env['PINO_LOG_LEVEL'],
+      })
+
+export const loggerMiddleware = pinoHttp({
+  logger,
+})
+
+// main.js
+import { loggerMiddleware } from './logger.js'
+
+app.use(loggerMiddleware)
+```
+
+---
+
+## Status Codes in ExpressJS
+
+HTTP status codes tell the client what happended with the request (e.g., success, error). Express uses `res.status(code)` to set them.
+
+Some status codes are listed below:
+
+| Code | Meaning               | Example Use           | Command in Express                        |
+| ---- | --------------------- | --------------------- | ----------------------------------------- |
+| 200  | OK (Success)          | Request succeeded     | `res.status(200).send("OK");`             |
+| 201  | Created               | New resource created  | `res.status(201).json(newItem);`          |
+| 400  | Bad Request           | Invalid input         | `res.status(400).send("Bad data");`       |
+| 401  | Unauthorized          | Authentication needed | `res.status(401).send("Login required");` |
+| 403  | Forbidden             | Access denied         | `res.status(403).send("No premission");`  |
+| 404  | Not Found             | Resource missing      | `res.status(404).send("Not found");`      |
+| 500  | Internal Server Error | Server-side error     | `res.status(500).send("Server error");`   |
+
+Tip: Always pair with a response body for clarity.
+
+---
+
+## Best Practices for Security
+
+Security protects your app from attacks. Some protections we can use are listed below:
+
+### XSS (Cross-Site Scripting)
+
+Prevents attackers from injecting malicious scripts into your page. It sanitize user input and use Content Security Policy (CSP).
+
+Best practice: Use libraries like `xss` to filter input:
+
+```js
+const xss = require('xss')
+
+const cleanInput = xss(req.body.comment)
+```
+
+### CSRF (Cross-Site Request Forgery)
+
+Stops unauthoried commands from other sites. Use CSRF tokens.
+
+Best practive: Use libraries like `csurf` for middleware:
+
+```js
+const csurf = require('csurf')
+
+app.use(csurf({ cookie: true }))
+```
+
+### HSTS (HTTP Strict Transport Security)
+
+Forces HTTPS to encrypt traffic.
+
+Enable manually as:
+
+```js
+app.use((req, res, next) => {
+  res.setHeader(
+    'Strict-Transport-Security',
+    'max-age=31536000;includeSubDomains',
+  )
+
+  next()
+})
+```
+
+### Helmet
+
+Or use `helmet` package which is a collection of middleware for security headers:
+
+```js
+import helmet from 'helmet'
+
+app.use(helmet())
+```
+
+### Other best practices
+
+- Use HTTPS: With `https` modules or other services.
+- Rate limiting: Prevent DDoS with `express-rate-limit`.
+- Secure cookies: Set `secure: true` and `httpOnly: true`.
+- Keep dependencies updated: Run `npm audit` regularly.
+- Input validation/sanitization: Always check and clean user data.
+- Error handling: Don't expose stack traces in production.
+
+Practice by building a small app incorporating these.
