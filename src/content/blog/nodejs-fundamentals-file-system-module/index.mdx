@@ -1,0 +1,168 @@
+---
+title: 'Node.js Fundamentals - File System Module'
+description: 'Fundamentals of Nodejs'
+date: 2026-01-20
+tags: ['nodejs', 'javascript']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## File System (fs) Module
+
+The `fs` module handles file operations like reading, writing, creating, or deleting files/folders. It is built-in in Node.js, so no installation is needed. Node.js provides both synchronouse (blocking) and asynchronous (non-blocking) methods. Use async for better performance in real applications.
+
+### Key Concepts
+
+- **Synchronous vs. Asynchronous**: Sync methods block code until done (e.g., `fs.readFileSync`). Async methods use callbacks/promises to continue running code while waiting (e.g., `fs.readFile`).
+- **File Paths**: Use absolute (full path like `/users/john/project/file.txt`) or relative (from current folder like `./file.txt`).
+- **Error Handling**: Always check for errors in callbacks.
+
+### Commond Commands
+
+Include `const fs = require("fs");` or `import * as fs from "fs";` at the top of your file.
+
+1. **Read a file** (Async):
+
+```js
+fs.readFile('example.txt', 'utf8', (error, data) => {
+  if (error) throw error // Errors need to be handled properly (just an example)
+  console.log(data) // Outputs file content
+})
+```
+
+- Explanation: Reads `example.txt` as text. Callback runs when done.
+
+2. **Write to a file** (Async):
+
+```js
+fs.writeFile('newfile.txt', 'Hello from Node.js!', (error) => {
+  if (error) throw error
+  console.log('File written!')
+})
+```
+
+- Explanation: Creates/overwrites `newfile.txt` with the text "Hello from Node.js!".
+
+3. **Append to a File** (Add without overwriting):
+
+```js
+fs.appendFile('newfile.txt', '\nMore text.', (error) => {
+  if (error) throw error
+  console.log('Appended!')
+})
+```
+
+- Explanation: Adds text to the end.
+
+4. **Delete a File**:
+
+```js
+fs.unlink('newfile.txt', (error) => {
+  if (error) throw error
+  console.log('Deleted!')
+})
+```
+
+- Explanation: Removes the file.
+
+5. **Create a Directory**:
+
+```js
+fs.mkdir('newfolder', (error) => {
+  if (error) throw error
+  console.log('Folder created!')
+})
+```
+
+- Explanation: Makes a new folder.
+
+6. **Promises Version** (Modern async with async/await):
+
+- Use `const fs = require("fs").promises;` or `import * as fs from "fs/promises;"`
+
+```js
+import * as fs from 'fs/promises'
+
+async function readFile() {
+  try {
+    const data = await fs.readFile('example.txt', 'utf8')
+    console.log(data)
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+readFile()
+```
+
+- Explanation: Cleaner way without callbacks.
+
+---
+
+## When to Use Synchronous vs Asynchronous
+
+Think of Node.js like a **single waiter (the event loop)** in a restaurant:
+
+- **Synchronous** (`*Sync` methods) -> The waiter stops everything and personally waits at the kitchen door until your food is ready. No one else gets served until your order is done. -> Simple to write, but the whole restaurant slows down if many people order.
+- **Asynchronous** (callbacks/promises/async-await) -> The waiter takes your order, gives it to the kitchen, and immediately goes to serve other tables. When your food is ready, the kitchen rings a bell -> waiter brings it. -> Everyone gets served much faster.
+
+### Use Synchronous when:
+
+- Synchronous methods: `fs.readFileSync`, `fs.writeFileSync`, etc.
+
+| Scenario                        | Why sync is okay / better here                      | Example                                                           |
+| ------------------------------- | --------------------------------------------------- | ----------------------------------------------------------------- |
+| One-time startup / setup code   | Code runs only once when the program starts         | Reading a config file before starting your CLI tool or script     |
+| Small CLI scripts / build tools | No users waiting, no concurrent requests            | A script that converts all `.txt` files in a folder to `.json`    |
+| Tests / setup scripts           | Blocking makes test code linear and easier to debug | Jest / Mocha setup that creates a temp folder before tests        |
+| Very few & predictable file ops | Operations are tiny and happen in sequence anyway   | Reading a small `settings.json` at the very beginning of a script |
+
+#### Example:
+
+```js
+import * as fs from 'fs'
+
+console.log('Starting the program...')
+
+// Blocks here but it is fine because nothing else needs to happen yet
+const config = JSON.parse(fs.readFileSync('config.json', 'utf8'))
+
+// Guaranteed to run after file is read
+console.log('Config loaded: ', config.theme)
+console.log('Program continues...')
+```
+
+### Use Asynchronous when:
+
+- Asynchronous methods: `fs.readFile`, **promises**, **async/await**.
+
+| Scenario                                      | Why async is strongly preferred here                                                             | Example                                                             |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| Web server (Express, Fastify, etc.)           | A slow file read would block **all users** (server freezes for everyone)                         | Serving user profile pictures or log files on HTTP request          |
+| Any code that handles multiple users/requests | Node.js shines at handling thousands of connections (blocking kills that advantage).             | A chat app that loads message history from file when user joins     |
+| Doing several file operations at once         | Read 10 files in parallel instead of 10 seconds                                                  | A photo gallery script that resizes multiple images concurrently    |
+| Performance / scalability matters             | Even in medium apps, async prevents freezing when disk is slow (e.g., cheap hosting, many reads) | A tool that watches a folder and processes new files as they arrive |
+
+#### Example:
+
+```js
+import * as fs from 'fs/promises'
+
+async function startServer() {
+  try {
+    console.log('Starting server...')
+
+    // Doesnot block the server
+    // Server can still accept connections while waiting
+    const data = await fs.readFile('large-log.txt', 'utf8')
+
+    console.log('File loaded, now processing...')
+    // ... send data to client
+  } catch (error) {
+    console.error('Failed to read file: ', error)
+  }
+}
+
+startServer()
+console.log("This prints immediately as server isn't frozen!")
+```
