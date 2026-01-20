@@ -16,8 +16,8 @@ export const SITE: Site = {
   TITLE: 'Sujal Magar',
   DESCRIPTION: 'I am a fullstack developer with 2+ years of experience. ',
   EMAIL: 'suzalgahamagar@gmail.com',
-  NUM_POSTS_ON_HOMEPAGE: 2,
-  POSTS_PER_PAGE: 3,
+  NUM_POSTS_ON_HOMEPAGE: 3,
+  POSTS_PER_PAGE: 4,
   SITEURL: 'https://sujalgahamagar.com.np/',
 }
 
