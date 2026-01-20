@@ -1,0 +1,71 @@
+---
+title: 'Node.js Fundamentals - HTTP Module'
+description: 'Fundamentals of HTTP Module'
+date: 2026-01-20
+tags: ['nodejs', 'javascript']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## HTTP Module
+
+The HTTP module is a built-in Node.js tool for creating web servers and making web requests. It's basic and low-level and also great for learning, but for real apps, use frameworks like Express.js. Import it with `import http from "http"`.
+
+### Key Concepts
+
+- **Server**: Listens for requests on a port (e.g., 3000).
+- **Request (req)**: Incoming data fom client (URL, method like GET/POST).
+- **Response (res)**: What you send back (HTML, JSON, status codes).
+- **Methods**: GET (fetch data), POST (send data), etc.
+- **Ports**: Common is 3000 for local dev.
+
+### Common Commands
+
+Include `import http from "http;"` at the top.
+
+1. **Create a Basic Server**:
+
+```js
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' })
+  res.end('Hello from Node.js server!')
+})
+
+server.listen(3000, () => {
+  console.log('Server running at http://localhost:3000')
+})
+```
+
+- Explanation: Creates a server which you can visit at `http://localhost:3000` in browser to see message. `200` is success status.
+
+2. **Handle Different Routes** (Basic routing):
+
+```js
+// inside the createServer callback
+if (req.url === '/') {
+  res.end('Home Page')
+} else if (req.url === '/about') {
+  res.end('About Page')
+} else {
+  res.writeHead(404)
+  res.end('Not found')
+}
+```
+
+- Explanation: Responds based on URL path.
+
+3. **Handle POST Request** (e.g., form data):
+
+```js
+// inside the createServer callback
+if (req.method === 'POST' && req.url === '/submit') {
+  let body = ''
+  req.on('data', (chunk) => (body += chunk))
+  req.on('end', () => {
+    console.log(body)
+    res.end('Data received')
+  })
+}
+```
+
+- Explanation: Collects data sent via POST.
