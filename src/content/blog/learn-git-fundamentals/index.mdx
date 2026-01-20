@@ -21,7 +21,6 @@ Staging is like preparing your changes before you save them permanently. It is a
   - `git reset <file or path/to/file>`: Remove a file from the staging area without losing changes.
   - `git reset .`: Remove all the files from the staging area without losing changes.
 
-
 ## Committing
 
 Committing is saving your staged changes to the project's history. Each commit is like a snapshot of your project at that point, with a message describing what changed. It is permanent in Git's history but can be undone if needed.
@@ -31,7 +30,6 @@ Committing is saving your staged changes to the project's history. Each commit i
   - `git commit -m "Your Message Here"`: Create a commit with a short message (usually describing the changes made).
   - `git commit --amend`: Edit the last commit's message or add forgotten changes to the previous commit.
   - `git log`: View your commit history.
-
 
 ## Branching
 
@@ -47,7 +45,6 @@ Branching lets you create separate lines of development in your project. The mai
   - `git branch -D <branch-name>`: Delete a branch (even if not merged).
   - `git switch <branch-name>`: Switch to a branch.
 
-
 ## Merging
 
 Merging combines changes from one branch into another. This is how you integrate work from a feature branch back into the main branch after the feature is ready.
@@ -57,9 +54,8 @@ Merging combines changes from one branch into another. This is how you integrate
   - `git merge <branch-name>`: Merge the specified branch into your current branch. (e.g., From main: `git merge feat-login`)
   - `git merge --abort`: Stop a merge if there are conflicts you can't resolve right away (this command can save your life).
 
-
 ## Stashing
- 
+
 Stashing temporarily saves your uncommitted changes so you can switch branches or work on something else without committing. It is like putting your work on a shelf to come back later.
 
 - **Why use it?** Useful when you are in the middle of something but need to quickly switch contexts, like fixing an urgent bug.
@@ -71,13 +67,12 @@ Stashing temporarily saves your uncommitted changes so you can switch branches o
   - `git stash drop`: Delete the latest stash.
   - `git stash pop`: Apply and delete the latest stash in one step.
 
-
 ## Pull Requests
 
 A pull request (or PR for short) is a way to propose changes from one branch to another, often in a remote repository (e.g., GitHub). It is not a core git command but a feature of hosting platforms. It allows team review, discussion, and approval before merging.
 
 - **Why use it?** It promotes collaboration, code reviews, and catching issues early in a team setting.
-- **Basic process (using Git commands + platform UI):
+- \*\*Basic process (using Git commands + platform UI):
   - First, push your branch to remote: `git push origin <branch-name>` (e.g., `git push origin feat-login`).
   - On the platform (e.g., GitHub), create a PR from your branch to the target or base branch (usually main).
   - To fetch and merge an approved PR locally: `git pull origin main` (after it has been merged remotely).
