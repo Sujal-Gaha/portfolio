@@ -1,0 +1,198 @@
+---
+title: 'MVC Pattern in ExpressJS'
+description: 'Learn how MVC pattern is integrated in ExpressJS'
+date: 2026-01-20
+tags:
+  [
+    'mvc',
+    'express',
+    'pattern',
+    'frontend',
+    'backend',
+    'fullstack',
+    'javascript',
+  ]
+image: './2026.png'
+authors: ['sujal']
+---
+
+## What is MVC Pattern?
+
+The Model-View-Controller (MVC) pattern is a widely used architectural design for organizing code in web applications. It separates the application into three interconnected components to promote modularity, reusability, and maintainability:
+
+### Model
+
+Representa the **data and business logic**. It handles interactions with the database (e.g., CRUD operations) and defines the structure of the data. Models are independent of the user interface and focus on data manipulation.
+
+### View
+
+Handles the presentation layer. It renders the User Interface (UI) based on the data provided by the controller. In web applications, views are often templates (e.g., HTML with embedded logic) that generate dynamic content.
+
+### Controller
+
+Acts as an **intermediary** between the Model and View. It processes incoming requests, interacts with the Model to fetch or update data, and passes the results to the View for rendering. Controllers handle routing, input validation, and application flow.
+
+MVC helps in separating concerns: Changes in the UI (View) doesn't affect data logic (Model), and vice versa. This makes testing, scaling, and collaboration easier.
+
+---
+
+## MVC in ExpressJS
+
+Express.js doesn't enfore MVC out of the box. Express is a minimalist framework but you can easily structure your app to follow the pattern. Below is a guide on how you can implement it:
+
+### 1. Project Structure:
+
+Organize your files in a directory like this for clarity:
+
+```bash
+my-express-app/
+├── app.js          // Main entry point (sets up Express app)
+├── models/         // Data models (e.g., database schemas)
+│   └── User.js
+├── views/          // Templates for rendering (e.g., using EJS or Pug)
+│   └── user.ejs
+├── controllers/    // Logic to handle requests
+│   └── userController.js
+├── routes/         // Route definitions (optional, can be in controllers)
+│   └── userRoutes.js
+├── public/         // Static assets (CSS, JS, images)
+├── node_modules/   // Dependencies
+└── package.json
+```
+
+### 2. Setup
+
+- Install Express: `npm install express` or `yarn add express`.
+- For views, install a template engine like EJS: `npm install ejs` or `yarn add ejs`.
+- For models, if using a database (e.g., MongoDB), install Mongoose: `npm install mongoose` or `yarn add mongoose`.
+
+### 3. Example Implementation
+
+Now, lets build a simple app that manages users (fetch and display a list of users). Assuming that we are using MongoDB for the model.
+
+#### Model (models/User.js):
+
+Defines the data schema and methods.
+
+```js
+import mongoose from 'mongoose'
+
+const UserSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  age: Number,
+})
+
+const User = mongoose.model('User', UserSchema)
+
+export { User, UserSchema }
+```
+
+#### View (views/user.ejs):
+
+A template to render the data (using EJS syntax).
+
+```html
+<!doctype html>
+<html>
+  <head>
+    <title>Users</title>
+  </head>
+  <body>
+    <h1>User List</h1>
+    <ul>
+      <% users.forEach(user => { %>
+      <li><%= user.name %> - <%= user.email %> (Age: <%= user.age %>)</li>
+      <% }); %>
+    </ul>
+  </body>
+</html>
+```
+
+#### Controller (controllers/userController.js):
+
+Handles logic for requests.
+
+```js
+import { User } from '../models/User'
+
+export const getUsers = async (req, res) => {
+  try {
+    const users = await User.find()
+    res.render('user', { users })
+  } catch (error) {
+    res.status(500).send('Error fetching users')
+  }
+}
+```
+
+#### Routes (routes/userRoutes.js):
+
+Maps URLs to controllers (optional; can inline in app.js).
+
+```js
+import express from 'express'
+import { userController } from '../controllers/userController'
+
+const router = express.Router()
+
+router.get('/users', userController.getUsers)
+
+export { router }
+```
+
+#### Main App (app.js)
+
+Ties everything together.
+
+```js
+import express from 'express'
+import mongoose from 'mogoose'
+import { router as userRoutes } from './routes/userRoutes'
+
+const app = express()
+
+mongoose
+  .connect(
+    'mongodb://localhost:27017/mydb',
+    { useNewUrlParser: true },
+    { useUnifiedTopology: true },
+  )
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((error) => console.log('MongoDB connection error: ', error))
+
+// Set view engine
+app.set('view engine', 'ejs')
+app.set('views', __dirname + '/views')
+
+app.use('/', userRoutes)
+
+app.list(3000, () => {
+  console.log('Server running on http://localhost:3000')
+})
+```
+
+### 4. How It Works
+
+- A request hits `/users`.
+- The route directs it to the controller's `getUsers` function.
+- The controller queries the model (e.g., fetches users from DB).
+- The controller renders the view with the data.
+- Response is sent back to the client.
+
+---
+
+## Benefits in ExpressJS
+
+- **Scalability**: As your app grows, you can add more models, views, or controllers without rewriting everything.
+- **Testing**: Each component can be tested independently (e.g., unit tests for models).
+- **Flexibility**: Express's middleware (e.g., for authentication) fits nicely in controllers.
+
+## Common Variations
+
+- **No Database**: If no DB, models can be simple JavaScript objects or files.
+- **Template Engines**: Use Pug, Handlebars, or even React for views (in a full-stack setup).
+- **API-Only**: For REST APIs, views might be JSON responses instead of HTML.
+- **Frameworks on Top**: Tools like NestJS build on Express with build-in MVC support.
+
+This is just a basic setup. You can adapt it based on your needs.
