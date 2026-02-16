@@ -1,0 +1,291 @@
+---
+title: 'Learn SQL'
+description: 'Fundamentals of SQL'
+date: 2026-02-16
+tags: ['database', 'backend', 'mysql', 'sql']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## 1. Introduction
+
+SQL (Structured Query Language) is the standard language used to communicate with relational database management systems (RDBMS). It allows users to create, manage, manipulate, and retrieve structured data stored in tables.
+Relational databases organize data into rows and columns, forming tables that can be related using keys.
+
+---
+
+## 2. Core Concepts
+
+### 2.1 Tables
+
+A table is a collection of related data organized into rows (records) and columns (fields).
+
+Example structure:
+
+| id  | name  | email           |
+| --- | ----- | --------------- |
+| 1   | Alice | alice@email.com |
+
+### 2.2 Schema
+
+A schema defines how data is structured:
+
+- Table names
+- Column names
+- Data types
+- Constraints
+
+### 2.3 Keys
+
+- **Primary Key:** Uniquely identifies each row.
+- **Foreign Key:** Links one table to another.
+- **Composite Key:** Multiple Columns forming a unique key.
+
+---
+
+## 3. SQL Command Categories
+
+### 3.1 DDL (Data Definition Language)
+
+Defines database structure.
+
+Commands:
+
+- CREATE
+- ALTER
+- DROP
+- TRUNCATE
+
+Example:
+
+```sql
+CREATE TABLE students (
+  id INTEGER PRIMARY KEY,
+  name TEXT,
+  age INTEGER
+);
+```
+
+### 3.2 DML (Data Manipulation Language)
+
+Manipulates data.
+
+Commands:
+
+- INSERT
+- UPDATE
+- DELETE
+
+Examples:
+
+```sql
+INSERT INTO students (name, age)
+VALUES ('John', 20);
+```
+
+### 3.3 DQL (Data Query Language)
+
+Retrieves data.
+
+Command:
+
+- SELECT
+
+Example:
+
+```sql
+SELECT * FROM students;
+```
+
+### 3.4 DCL (Data Control Language)
+
+Controls permissions.
+
+Commands:
+
+- GRANT
+- REVOKE
+
+### 3.5 TCL (Transaction Control Language)
+
+Manages transactions.
+
+Commands:
+
+- COMMIT
+- ROLLBACK
+- SAVEPOINT
+
+---
+
+## 4. Data Types
+
+Common SQL data types:
+
+- INTEGER
+- FLOAT/DECIMAL
+- CHAR/VARCHAR
+- TEXT
+- DATE
+- BOOLEAN
+
+---
+
+## 5. Constraints
+
+Used to enforce rules:
+
+- NOT NULL
+- UNIQUE
+- PRIMARY KEY
+- FOREIGN KEY
+- CHECK
+- DEFAULT
+
+Example:
+
+```sql
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL
+);
+```
+
+---
+
+## 6. Filtering Data
+
+### 6.1 WHERE Clause
+
+```sql
+SELECT * FROM students
+WHERE age > 18;
+```
+
+### 6.2 Operators
+
+- `=`, `!=`, `>`, `<`
+- BETWEEN
+- LIKE
+- IN
+
+---
+
+## 7. Sorting
+
+```sql
+SELECT * FROM students
+ORDER BY age DESC;
+```
+
+---
+
+## 8. Aggregation Functions
+
+- COUNT()
+- SUM()
+- AVG()
+- MIN()
+- MAX()
+
+Example:
+
+```sql
+SELECT AVG(age) FROM students;
+```
+
+---
+
+## 9. GROUP BY & HAVING
+
+```sql
+SELECT age, COUNT(*)
+FROM students
+GROUP BY age
+HAVING COUNT(*) > 1;
+```
+
+---
+
+## 10. Joins
+
+Used to combine tables.
+
+Types:
+
+- INNER JOIN
+- LEFT JOIN
+- RIGHT JOIN
+- FULL JOIN
+
+Example:
+
+```sql
+SELECT orders.id, users.name
+FROM orders
+INNER JOIN users
+ON orders.user_id = users.id;
+```
+
+---
+
+## 11. Indexes
+
+Improve query performance.
+
+```sql
+CREATE INDEX idx_name
+ON students(name);
+```
+
+---
+
+## 12. Transactions & ACID
+
+ACID Properties:
+
+- **Atomicity:** All or nothing transactions
+- **Consistency:** Valid State maintenance
+- **Isolation:** Transactions do not affect each other
+- **Durability:** Permanent changes after commitment
+
+---
+
+## 13. Views
+
+Virtual tables.
+
+```sql
+CREATE VIEW adult_students AS
+SELECT * FROM students WHERE age >= 18;
+```
+
+---
+
+## 14. Stored Procedures & Triggers
+
+Automated SQL logic executed on events.
+
+---
+
+## 15. Use Cases
+
+- Banking systems
+- E-commerce
+- School management
+- Inventory systems
+
+---
+
+## 16. Advantages
+
+- Structured data integrity
+- Strong transactions
+- Powerful querying
+
+---
+
+## 17. Limitations
+
+- Rigid schema
+- Harder horizontal scaling

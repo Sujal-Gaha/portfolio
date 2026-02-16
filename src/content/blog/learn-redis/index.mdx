@@ -1,0 +1,131 @@
+---
+title: 'Learn Redis'
+description: 'Fundamentals of Redis'
+date: 2026-02-16
+tags: ['database', 'backend', 'redis', 'nosql']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## 1. Introduction
+
+Redis (Remote Dictionary Server) is an in-memory key-value data store used as a database, cache, and message broker.
+
+Data is stored in RAM, making Redis extremely fast.
+
+---
+
+## 2. Key Features
+
+- In-memory storage
+- Persistence options
+- Pub/Sub messaging
+- Data structures support
+- High performance
+
+---
+
+## 3. Data Structures
+
+- Strings
+
+```bash
+r.set("name", "Alice")
+```
+
+- Hashes
+
+```bash
+r.hset("user:1", mapping={"name": "Alice"})
+```
+
+- Lists
+
+```bash
+r.rpush("tasks", "task1")
+```
+
+- Sets
+
+```bash
+r.sadd("tags", "db")
+```
+
+- Sorted Sets
+
+Used for leaderboards.
+
+---
+
+## 4. Persistence
+
+Two methods:
+
+- RDB snapshots
+- AOF (Append Only File)
+
+---
+
+## 5. Expiration (TTL)
+
+```bash
+r.set("temp", "value", ex=10)
+```
+
+---
+
+## 6. Pub/Sub
+
+Messaging system.
+
+Publish:
+
+```bash
+r.publish("channel", "hello")
+```
+
+Subscribe via listeners.
+
+---
+
+## 7. Transactions
+
+```python
+pipe = r.pipeline()
+pipe.set("a", 1)
+pipe.set("b", 2)
+pipe.execute()
+```
+
+---
+
+## 8. Caching Patterns
+
+- Cache-aside
+- Write-through
+- Write-behind
+
+---
+
+## 9. Use Cases
+
+- Session storage
+- Caching queries
+- Real-time analytics
+- Leaderboards
+- Queues
+
+---
+
+## 10. Advantages
+
+- Ultra fast
+- Lightweight
+- Rich data structures
+
+---
+
+## 11. Limitations
+
+- RAM dependent
+- Limited complex queries
