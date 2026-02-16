@@ -12,31 +12,33 @@ authors: ['sujal']
 In TypeScript, the `number` type represents both **integer** and **floating-point** numbers. It is similar to JavaScript's number type but with added type safety. You can declare variables as `number` to ensure they only hold numeric values, preventing accidental assignments of other types like strings.
 
 **Key points:**
+
 - Supports all numeric operations like addition, subtraction, etc.
 - Includes special values like `NaN`, `Infinity`, and `-Infinity`.
 - TypeScript infers `number` for numeric literals unless specified otherwise.
 
 **Code examples:**
+
 ```typescript
 // Basic declaration and assignment
-let age: number = 25;
-age = 30; // Valid
+let age: number = 25
+age = 30 // Valid
 // age = "thirty"; // Error: Type 'string' is not assignable to type 'number'
 
 // Operations
-let height: number = 5.9;
-let weight: number = 70;
-let bmi: number = weight / (height * height);
+let height: number = 5.9
+let weight: number = 70
+let bmi: number = weight / (height * height)
 
 // Special values
-let notANumber: number = NaN;
-let infinite: number = Infinity;
+let notANumber: number = NaN
+let infinite: number = Infinity
 
 // Function with number parameters
 function add(a: number, b: number): number {
-  return a + b;
+  return a + b
 }
-console.log(add(10, 20)); // Output: 30
+console.log(add(10, 20)) // Output: 30
 ```
 
 ---
@@ -46,32 +48,34 @@ console.log(add(10, 20)); // Output: 30
 The `string` type in TypeScript represents text data. It enforces that variables hold string values, which can be enclosed in single quotes, double quotes, or backticks (for template literals). This helps catch errors like concatenating numbers without conversion.
 
 **Key points:**
-- Supports string methods like `length`,  `toUpperCase()`, `substring()`, etc.
+
+- Supports string methods like `length`, `toUpperCase()`, `substring()`, etc.
 - Template literals allow embedded expressions.
 - TypeScript can infer `string` from string literals.
 
 **Code example:**
+
 ```typescript
 // Basic declaration
-let name: string = "Alice";
-name = 'Bob'; // Valid
+let name: string = 'Alice'
+name = 'Bob' // Valid
 // name = 123; // Error: Type 'number' is not assignable to type 'string'
 
 // String methods
-let greeting: string = "Hello, World!";
-console.log(greeting.length); // Output: 13
-console.log(greeting.toUpperCase()); // Output: "HELLO, WORLD!"
+let greeting: string = 'Hello, World!'
+console.log(greeting.length) // Output: 13
+console.log(greeting.toUpperCase()) // Output: "HELLO, WORLD!"
 
 // Template literals
-let user: string = "Charlie";
-let message: string = `Welcome, ${user}!`; // Interpolates the variable
-console.log(message); // Output: "Welcome, Charlie!"
+let user: string = 'Charlie'
+let message: string = `Welcome, ${user}!` // Interpolates the variable
+console.log(message) // Output: "Welcome, Charlie!"
 
 // Function with string return
 function concatenate(first: string, last: string): string {
-  return first + " " + last;
+  return first + ' ' + last
 }
-console.log(concatenate("John", "Doe")); // Output: "John Doe"
+console.log(concatenate('John', 'Doe')) // Output: "John Doe"
 ```
 
 ---
@@ -81,33 +85,38 @@ console.log(concatenate("John", "Doe")); // Output: "John Doe"
 Arrays in TypeScript are typed collections of values. You can specify the type of elements in the array (e.g., `number[]` for an array of numbers) to ensure type consistency. This prevents mixing types and provides better autocompletion and error checking.
 
 **Key points:**
+
 - Declared as `Type[]` or `Array<Type>`.
 - Supports array methods like `push()`, `pop()`, `map()`, etc.
 - Can be readonly with `readonly` keyword.
 - TypeScript infers array types from initialization.
 
 **Code examples:**
+
 ```typescript
 // Basic array of numbers
-let scores: number[] = [90, 85, 95];
-scores.push(100); // Valid
+let scores: number[] = [90, 85, 95]
+scores.push(100) // Valid
 // scores.push("A"); // Error: Argument of type 'string' is not assignable to parameter of type 'number'
 
 // Alternative syntax
-let fruits: Array<string> = ["apple", "banana", "cherry"];
+let fruits: Array<string> = ['apple', 'banana', 'cherry']
 
 // Readonly array
-let readonlyNums: readonly number[] = [1, 2, 3];
+let readonlyNums: readonly number[] = [1, 2, 3]
 // readonlyNums.push(4); // Error: Property 'push' does not exist on type 'readonly number[]'
 
 // Multidimensional array
-let matrix: number[][] = [[1, 2], [3, 4]];
+let matrix: number[][] = [
+  [1, 2],
+  [3, 4],
+]
 
 // Function with array parameter
 function sumArray(nums: number[]): number {
-  return nums.reduce((acc, curr) => acc + curr, 0);
+  return nums.reduce((acc, curr) => acc + curr, 0)
 }
-console.log(sumArray([10, 20, 30])); // Output: 60
+console.log(sumArray([10, 20, 30])) // Output: 60
 ```
 
 ---
@@ -117,12 +126,14 @@ console.log(sumArray([10, 20, 30])); // Output: 60
 `Record` is a utility type in TypeScript that creates an object type with specified keys and values. It is like a dictionary or map where keys are of one type (often string or numbers) and values are of another. It is useful for defining objects with dynamic but typed properties.
 
 **Key points:**
+
 - Syntax: `Record<Keys, Type>`.
 - Keys can be string, number, or sumbol (commonly string).
 - Ensures all properties conform to the specified type.
 - Great for configurations, lookups, or APIs with variable keys.
 
 **Code examples:**
+
 ```typescript
 // Record with string keys and number values
 type PhoneBook = Record<string, number>;
@@ -157,6 +168,7 @@ console.log(getValue(config, "darkMode")); // Output: true
 Generics in TypeScript allow you to create reusable components that work with any data type while maintaining type safety. They act like placeholders for types, defined with angle brackets (`<T>`), and are resolved when the component is used.
 
 **Key points:**
+
 - Used in functions, classes, interfaces, etc.
 - Enables type-safe collections, promises, etc.
 - Can have constraints (e.g., `extends` a type).
@@ -167,36 +179,36 @@ Generics in TypeScript allow you to create reusable components that work with an
 ```typescript
 // Generic function
 function identity<T>(arg: T): T {
-  return arg;
+  return arg
 }
-let num = identity(42); // num is number
-let str = identity("Hello"); // str is string
+let num = identity(42) // num is number
+let str = identity('Hello') // str is string
 
 // Generic with array
 function getFirstElement<T>(arr: T[]): T | undefined {
-  return arr[0];
+  return arr[0]
 }
-console.log(getFirstElement([1, 2, 3])); // Output: 1 (type: number)
-console.log(getFirstElement(["a", "b"])); // Output: "a" (type: string)
+console.log(getFirstElement([1, 2, 3])) // Output: 1 (type: number)
+console.log(getFirstElement(['a', 'b'])) // Output: "a" (type: string)
 
 // Generic with constraint
 function merge<U extends object, V extends object>(obj1: U, obj2: V): U & V {
-  return { ...obj1, ...obj2 };
+  return { ...obj1, ...obj2 }
 }
-let person = merge({ name: "Alice" }, { age: 30 }); // { name: string; age: number }
+let person = merge({ name: 'Alice' }, { age: 30 }) // { name: string; age: number }
 
 // Generic class
 class Box<T> {
-  private value: T;
+  private value: T
   constructor(value: T) {
-    this.value = value;
+    this.value = value
   }
   getValue(): T {
-    return this.value;
+    return this.value
   }
 }
-let numberBox = new Box(100); // Box<number>
-console.log(numberBox.getValue()); // Output: 100
+let numberBox = new Box(100) // Box<number>
+console.log(numberBox.getValue()) // Output: 100
 ```
 
 ---
@@ -207,15 +219,15 @@ In TypeScript, both `type` (type aliases) and `interface` are used to define cus
 
 **Key differences:**
 
-| Aspect | Types | Interface |
-| --- | --- | --- |
-| Declaration Merging | Types do not merge; redeclaring a type with the same name causes an error. | Interfaces support automatic merging if declared multiple times with the same name (useful for extending libraries or modules). | 
-| Extensibility | Types use intersection (`&`) for similar composition, but it is not as straightforward for class implementations | Interfaces can be extended using `extends` (for inheritance). |
-| Flexibility | Types are more versatile and can represent primitives, unions (`\|`), intersections (`&`), tuples, or mapped types. | Interfaces are primarily for object shapes and cannot directly define unions or primitives. |
-| Use Cases | Use types for aliases of complex or computed types (e.g., unions of literals). | Use interfaces for defining contracts (e.g., for classes or objects that might be implemented/extended). |
-| Performance and Readability | Types are often more concise for advanced type manipulations. | Interfaces might offer slightly better error messages in some IDEs. |
-| Implementation | Types can be used in `implements` via workarounds like intersections. | Classes can implement interfaces but not types |
-| Primitives and Non-Objects | Types can alias primitives (e.g., `type ID = string;`). | Interfaces cannot. |
+| Aspect                      | Types                                                                                                               | Interface                                                                                                                       |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Declaration Merging         | Types do not merge; redeclaring a type with the same name causes an error.                                          | Interfaces support automatic merging if declared multiple times with the same name (useful for extending libraries or modules). |
+| Extensibility               | Types use intersection (`&`) for similar composition, but it is not as straightforward for class implementations    | Interfaces can be extended using `extends` (for inheritance).                                                                   |
+| Flexibility                 | Types are more versatile and can represent primitives, unions (`\|`), intersections (`&`), tuples, or mapped types. | Interfaces are primarily for object shapes and cannot directly define unions or primitives.                                     |
+| Use Cases                   | Use types for aliases of complex or computed types (e.g., unions of literals).                                      | Use interfaces for defining contracts (e.g., for classes or objects that might be implemented/extended).                        |
+| Performance and Readability | Types are often more concise for advanced type manipulations.                                                       | Interfaces might offer slightly better error messages in some IDEs.                                                             |
+| Implementation              | Types can be used in `implements` via workarounds like intersections.                                               | Classes can implement interfaces but not types                                                                                  |
+| Primitives and Non-Objects  | Types can alias primitives (e.g., `type ID = string;`).                                                             | Interfaces cannot.                                                                                                              |
 
 Both can describe object types, and in many cases, the choice is stylistic. TypeScript's official recommendation is to use interfaces for public APIs and types for internal complexities.
 
@@ -224,28 +236,29 @@ Both can describe object types, and in many cases, the choice is stylistic. Type
 ```typescript
 // Basic Object Shape: Both can do this
 interface PersonInterface {
-  name: string;
-  age: number;
+  name: string
+  age: number
 }
 
 type PersonType = {
-  name: string;
-  age: number;
+  name: string
+  age: number
 }
 
-let personI: PersonInterface = { name: "Alice", age: 30 }; // Valid
-let personT: PersonType = { name: "Bob", age: 40 }; // Valid
+let personI: PersonInterface = { name: 'Alice', age: 30 } // Valid
+let personT: PersonType = { name: 'Bob', age: 40 } // Valid
 
 // Declaration Merging: Interfaces support it, types do not
 interface Car {
-  model: string;
+  model: string
 }
 
-interface Car { // Merges with the previous declaration
-  year: number;
+interface Car {
+  // Merges with the previous declaration
+  year: number
 }
 
-let vehicle: Car = { model: "Tesla", year: 2023 }; // Has both properties
+let vehicle: Car = { model: 'Tesla', year: 2023 } // Has both properties
 
 // For types, this would error:
 // type Animal = { species: string; };
@@ -253,60 +266,62 @@ let vehicle: Car = { model: "Tesla", year: 2023 }; // Has both properties
 
 // Extensibility: Interfaces use 'extends', types use intersections
 interface AnimalInterface {
-  species: string;
+  species: string
 }
 
 interface DogInterface extends AnimalInterface {
-  breed: string;
+  breed: string
 }
 
-let dogI: DogInterface = { species: "Canine", breed: "Labrador" };
+let dogI: DogInterface = { species: 'Canine', breed: 'Labrador' }
 
 type AnimalType = {
-  species: string;
+  species: string
 }
 
 type DogType = AnimalType & {
-  breed: string;
+  breed: string
 }
 
-let dogT: DogType = { species: "Canine", breed: "Labrador" };
+let dogT: DogType = { species: 'Canine', breed: 'Labrador' }
 
 // Unions and Primitives: Types can do this, interfaces cannot
-type ID = string | number; // Union type
-let userId: ID = 123; // Valid
-userId = "abc"; // Valid
+type ID = string | number // Union type
+let userId: ID = 123 // Valid
+userId = 'abc' // Valid
 
 // Interface equivalent would require workarounds, like:
 // interface IDInterface {} // But can't directly union primitives
 
-type Status = "active" | "inactive"; // Literal union
-let userStatus: Status = "active"; // Valid
+type Status = 'active' | 'inactive' // Literal union
+let userStatus: Status = 'active' // Valid
 // let invalidStatus: Status = "pending"; // Error
 
 // Interfaces can't define primitives or simple unions directly
 
 // Implementing in Classes: Interfaces are preferred
-class Employee implements PersonInterface { // Works with interface
-  name: string = "Charlie";
-  age: number = 50;
+class Employee implements PersonInterface {
+  // Works with interface
+  name: string = 'Charlie'
+  age: number = 50
 }
 
 // class Worker implements PersonType { } // Error: A class can only implement an object type or intersection of object types with statically known members
 
 // But you can use types with intersections for similar effect
-class Manager implements PersonType { // Actually works in recent TS versions, but interfaces are cleaner 
-  name: string = "Dave";
-  age: number = 60;
+class Manager implements PersonType {
+  // Actually works in recent TS versions, but interfaces are cleaner
+  name: string = 'Dave'
+  age: number = 60
 }
 
 // Advanced: Mapped Types (better with types)
 type ReadonlyProps<T> = {
-  readonly [K in keyof T]: T[K];
-};
+  readonly [K in keyof T]: T[K]
+}
 
-type ReadonlyPerson = ReadonlyProps<PersonType>;
-let immutablePerson: ReadonlyPerson = { name: "Eve", age: 25 };
+type ReadonlyPerson = ReadonlyProps<PersonType>
+let immutablePerson: ReadonlyPerson = { name: 'Eve', age: 25 }
 // immutablePerson.age = 30; // Error: Cannot assign to 'age' because it is a read-only property
 
 // Interfaces can use mapped types too, but types are more natural for this

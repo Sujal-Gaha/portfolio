@@ -1,0 +1,209 @@
+---
+title: 'Learn Auth'
+description: 'Fundamentals of Auth'
+date: 2026-02-16
+tags: ['backend', 'auth', 'python', 'fastapi']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## 1. Authentication vs Authorization
+
+- **Auhentication**: "Who are you?" Verifies identity via passwords, OAuth, biometrics, etc.
+- **Authorization**: "What can you do?" Decides permissions _after_ login.
+
+Think of it like a nightclub: Authentication is the bouncer checking your ID. Authorization is deciding if you can enter the VIP lounge.
+
+**Common Auth Methods:**
+
+- **JWT (JSON Web Tokens):** Stateless, popular for APIs.
+- **Sessions**: Cookie-based for web apps.
+- **OAuth2/OpenID Connect:** For social logins.
+
+## 2. Role-Based Access Control (RBAC)
+
+Assign **roles** (e.g., `admin`, `editor`, `viewer`) to users, and map roles to **permissions** (e.g., `read:posts`, `delete:users`).
+
+### Why RBAC?
+
+- **Simple & Scalable:** Great for teams with clear hierarchies.
+- **Pros:** Easy to audit, low overhead.
+- **Cons:** Rigid for complex scenarios (e.g., "edit only your own docs").
+
+![](./rbac.png)
+
+**Real-World Example:** In a blog app:
+
+- `Admin`: All permissions.
+- `Editor`: Create/edit posts.
+- `Viewer`: Read only.
+
+---
+
+### RBAC with FastAPI
+
+Use dependency injection for clean enforcement.
+
+```python
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from pydantic import BaseModel
+import jwt
+
+app = FastAPI()
+security = HTTPBearer()
+
+# Simulate users
+USERS = {
+  "alice": {"role": "admin"},
+  "bob": {"role": "editor"}
+}
+
+SECRET_KEY = "secret-key"
+
+class User(BaseModel):
+  username: str
+  role: str
+
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+  token = credentials.credentials
+
+  try:
+    payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+    username = payload.get("sub")
+    user = USERS.get(username)
+    if not user:
+      raise HTTPException(status_code=401, detail="Invalid user")
+    return User(username=username, role=user["role"])
+  except:
+    raise HTTPException(status_code=401, detail="Invalid token")
+
+def require_role(required_role: str):
+  def role_check(user: User = Depends(get_current_user)):
+    if user.role != required_role:
+      raise HTTPException(status_code=403, detail="Insufficient permissions")
+    return user
+  return role_checker
+
+@app.post("/posts")
+def create_post(user: User = Depends(require_role("editor"))):
+  return {"msg": f"Post created by {user.username}"}
+
+@app.delete("/users")
+def delete_user(user: User = Depends(require_role("admin"))):
+  return {"msg": "User deleted"}
+```
+
+**How to Test:**
+
+1. Generate JWT: `jwt.encode({"sub": "alice"}, SECRET_KEY, algorithm="HS256")`
+2. Hits `/posts` with `Authorization: Bearer <token>`.
+
+---
+
+## 3. Attribute-Based Access Control (ABAC)
+
+**ABAC** is the flexible beast: Decisions based on **attributes** of user, resource, action, and environment. No rigid roles but pure policies.
+
+**Example Attributes:**
+
+- User: `department=HR`, `clearance=3`
+- Resource: `owner=alice`, `sensitivity=high`
+- Environment `time=9am`, `location=office`
+
+**When to Use ABAC Over RBAC?**
+
+- Dynamic rules (e.g., "HR can view payrool only during business hours").
+- Multi-tenant apps.
+- Complex compliance (GDPR, HIPAA). [See More](https://www.onelogin.com/learn/rbac-vs-abac)
+
+### ABAC: Simple Policy Example
+
+Use `py-abac` for production (pip install py-abac). Here is a lightweight version:
+
+```python
+from fastapi import Depends, HTTPException
+from pydantic import BaseModel
+
+class ABACRequest(BaseModel):
+  user: dict  # e.g., {"department": "HR", "clearance": 3}
+  resource: dict  # e.g., {"owner", "alice"}
+  action: str
+
+def abac_policy(req: ABACRequest):
+  # Policy: HR can read their own docs; clearance > 2 for sensitive
+  if req.action == "read":
+    if req.user["department"] == "HR" and req.resource["owner"] == req.user.get("name"):
+      return True
+    if req.user["clearance"] > 2:
+      return True
+  return False
+
+@app.get("/docs/{doc_id}")
+def read_doc(doc_id: int, user: dict = Depends(get_current_user)):  ## Assume user from JWT
+  resource = {"owner": "alice", "sensitivity": "high"}  # From DB
+  req = ABACRequest(user=user, resource=resource, action="read")
+  if not abac_policy(req):
+    raise HTTPException(403, "Access denied")
+  return {"doc": "Secret payrool data"}
+```
+
+**Note:** For scale, try **Casbin** (mixes RBAC + ABAC) or **Cerbos**.
+
+---
+
+## 4. Auth0
+
+**Auth0** handles _everything_. No reinventing the wheel. Following are the features it offers:
+
+- Universal Login, SSO, MFA, Passwordless.
+- Social/Enterprise logins (Google, Azure AD).
+- RBAC/ABAC out-of-the-box.
+- Actions (custom logic hooks).
+
+### Step-by-Step: Auth0 + FastAPI
+
+1. **Setup Auth0:**
+
+- Sign up at [Auth0](https://auth0.com/)
+- Create an **API** (for backend) + **Application** (for frontend).
+- Note: Domain, Client ID, Audience.
+
+2. **Protect Endpoints** (JWT Validation):
+
+```python
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.security import HTTPBearer
+from jose import jwt, JWTError
+from auth0.authentication import GetToken  # For token exchange if needed
+
+app = FastAPI()
+security = HTTPBearer()
+
+AUTH0_DOMAIN = "your-domain.auth0.com"
+API_AUDIENCE = "your-audience"
+ALGORITHMS = ["RS256"]
+
+def verify_token(credentials: HTTPBearer = Depends(security)):
+  token = credentials.credentials
+  try:
+    payload = jwt.decode(
+      token,
+      key=f"https://{AUTH0_DOMAIN}/.well-known/jwks.json",  # Auto-fetches
+      audience=API_AUDIENCE,
+      algorithms=ALGORITHMS
+    )
+    return payload  # Contains user_id, permissions, etc.
+  except JWTWrror:
+    raise HTTPException(401, "Invalid token")
+
+@app.get("/protected")
+def protected(user: dict = Depends(verify_token)):
+  return {"msg": f"Hello, {user.get('sub')}!"}
+```
+
+**RBAC in Auth0:**
+
+- In Auth0 Dashboard: Assign **Roles** + **Permissions** to users.
+- In token: `permissions` array (e.g., `["read:posts"]`).
+- Check: `if "read:posts" not in user.get("permissions", []): raise 403`
