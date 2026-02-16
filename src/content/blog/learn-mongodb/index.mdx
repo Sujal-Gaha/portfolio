@@ -1,0 +1,163 @@
+---
+title: 'Learn MongoDB'
+description: 'Fundamentals of MongoDB'
+date: 2026-02-16
+tags: ['database', 'backend', 'mongo', 'nosql']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## 1. Introduction
+
+MongoDB is a NoSQL document-oriented database that stores data in flexible JSON-like documents (BSON).
+
+It is designed for scalability, flexibility, and high performance.
+
+## 2. Key Concepts
+
+### Database -> Collections -> Documents
+
+- Database: Container
+- Collection: Group of documents
+- Document: JSON-like record
+
+Example:
+
+```json
+{
+  "name": "Alice",
+  "age": 25,
+  "skills": ["Python", "SQL"]
+}
+```
+
+---
+
+## 3. Features
+
+- Schema-less
+- Horizontal scaling
+- Replication
+- Indexing
+- Aggregation framework
+
+---
+
+## 4. CRUD Operations
+
+### Insert
+
+```bash
+collection.insert_one({"name":"Alice"})
+```
+
+### Find
+
+```bash
+collection.find({"age": {"$gt": 20}})
+```
+
+### Update
+
+```bash
+collection.update_one(
+  {"name":"Alice"},
+  {"$set":{"age":26}}
+)
+```
+
+### Delete
+
+```bash
+collection.delete_one({"name":"Alice"})
+```
+
+---
+
+## 5. Data Modeling
+
+Two approaches:
+
+- Embedded documents
+- Referenced documents
+
+---
+
+## 6. Indexing
+
+```bash
+collection.create_index("name")
+```
+
+Improves read performance.
+
+---
+
+## 7. Aggregation Pipeline
+
+Processes data in stages.
+
+Example:
+
+```bash
+pipeline = [
+  {"$match": {"age": {"$gt": 20}}},
+  {"$group": {"_id": "$age", "count": {"$sum": 1}}}
+]
+collection.aggregate(pipeline)
+```
+
+---
+
+## 8. Replication
+
+Replica sets provide:
+
+- High availability
+- Automatic failover
+
+---
+
+## 9. Sharding
+
+Distributes data across servers.
+
+Used for big data scaling.
+
+---
+
+## 10. Transactions
+
+Supported in modern MongoDB versions.
+
+---
+
+## 11. Security
+
+- Authentication
+- Authorization
+- Encryption
+
+---
+
+## 12. Use Cases
+
+- Content management
+- IoT data
+- Real-time analytics
+- Catalog systems
+
+---
+
+## 13. Advantages
+
+- Flexible schema
+- Easy scaling
+- Developer friendly
+
+---
+
+## 14. Limitations
+
+- Weaker joins
+- Higher storage usage

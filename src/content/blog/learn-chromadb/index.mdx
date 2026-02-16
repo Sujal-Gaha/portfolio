@@ -1,0 +1,159 @@
+---
+title: 'Learn ChromaDB'
+description: 'Fundamentals of ChromaDB'
+date: 2026-02-16
+tags: ['database', 'backend', 'ChromaDB', 'nosql']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## 1. Introduction
+
+ChromaDB is a open-source vector database designed for storing and querying embeddings.
+
+It is widely used in AI applications like semantic search and Retrieval-Augmented Generation (RAG).
+
+---
+
+## 2. What are Embeddings?
+
+Embeddings are numerical vector representations of data (text, images, audio).
+
+Example:
+
+Text -> [0.12, 0.98, 0.44, ...]
+
+They allow similarity comparison using distance metrics.
+
+---
+
+## 3. Key Features
+
+- Vector similarity search
+- Metadata filtering
+- Persistent storage
+- Scalable indexing
+- AI framework integrations
+
+---
+
+## 4. Architecture
+
+Components:
+
+- Client
+- Collections
+- Embedding functions
+- Storage engine
+
+---
+
+## 5. Creating a Client
+
+```python
+import chromadb
+
+client = chromadb.PersistentClient(path="./db")
+```
+
+---
+
+## 6. Collections
+
+Equivalent to tables.
+
+```python
+collection = client.get_or_create_collection("docs")
+```
+
+---
+
+## 7. Adding Data
+
+```python
+collection.add(
+  documents=["AI is powerful"],
+  ids=["1"],
+  embeddings=[[0.1, 0.2, 0.3]]
+)
+```
+
+---
+
+## 8. Querying
+
+```python
+collection.query(
+  query_embeddings=[[0.1, 0.2, 0.3]],
+  n_results=2
+)
+```
+
+Returns closest vectors.
+
+---
+
+## 9. Distance Metrics
+
+- Cosine similarity
+- Euclidean distance
+- Dot product
+
+---
+
+## 10. Metadata Filtering
+
+```python
+collection.query(
+  query_embeddings=[[...]],
+  where={"topic": "AI"}
+)
+```
+
+---
+
+## 11. Indexing
+
+Uses ANN (Approximate Nearest Neighbor):
+
+- HNSW algorithm
+
+---
+
+## 12. Persistence
+
+Stores embeddings on disk for reuse.
+
+---
+
+## 13. Integrations
+
+- LangChain
+- LlamaIndex
+- Haystack
+- Hugging Face
+- OpenAI embeddings
+
+---
+
+## 14. Use Cases
+
+- Semantic search
+- Chatbots
+- Recommendation systems
+- Document retrieval
+
+---
+
+## 15. Advantages
+
+- Optimized for vectors
+- Fast similarity search
+- AI-native design
+
+---
+
+## 16. Limitations
+
+- Not for transactional data
+- Requires embeddings pipeline

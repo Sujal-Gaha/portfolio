@@ -1,0 +1,212 @@
+---
+title: 'Learn PostgreSQL'
+description: 'Fundamentals of PostgreSQL'
+date: 2026-02-16
+tags: ['database', 'backend', 'postgresql', 'sql']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## 1. Introduction
+
+PostgreSQL is an advanced open-source relational database management system (RDBMS). It uses SQL and extends it with powerful enterprise features.
+
+Often called **Postgres**, it is known for reliability, extensibility, and standards compliance.
+
+---
+
+## 2. Key Features
+
+- ACID compliant transactions
+- Advanced indexing
+- JSON & JSONB support
+- Full-text search
+- Extensions support
+- Concurrency control (MVCC)
+
+---
+
+## 3. Architecture Overview
+
+Components:
+
+- Server process
+- Client applications
+- Database cluster
+- Tablespaces
+
+Postgres uses a **client-server model**.
+
+---
+
+## 4. Installation & Tools
+
+Common tools:
+
+- psql (CLI)
+- pgAdmin (GUI)
+- DBeaver
+
+---
+
+## 5. Database Operations
+
+### Create Database
+
+```sql
+CREATE DATABASE company;
+```
+
+### Connect
+
+```sql
+\c company
+```
+
+### Drop
+
+```sql
+DROP DATABASE company;
+```
+
+---
+
+## 6. Data Types
+
+Postgres supports advanced types:
+
+- Numeric
+- Text
+- Boolean
+- Date/Time
+- UUID
+- Array
+- JSON/JSONB
+- HSTORE
+
+---
+
+## 7. JSONB Example
+
+```sql
+CREATE TABLE products (
+  id SERIAL PRMARY KEY,
+  data JSONB
+);
+
+INSERT INTO products (data)
+VALUES ('{"name":"Laptop","price":1200}');
+```
+
+---
+
+## 8. Indexing
+
+Types:
+
+- B-Tree (default)
+- Hash
+- GIN
+- GiST
+- BRIN
+
+Example:
+
+```sql
+CREATE INDEX idx_json
+ON products USING GIN (data);
+```
+
+---
+
+## 9. Constraints
+
+- PRIMARY KEY
+- FOREIGN KEY
+- UNIQUE
+- CHECK
+- EXCLUSION
+
+---
+
+## 10. Transactions
+
+```sql
+BEGIN;
+UPDATE accounts SET balance = balance - 100 WHERE id=1;
+UPDATE accounts SET balance = balance + 100 WHERE id=2;
+COMMIT;
+```
+
+---
+
+## 11. MVCC (Multi-Version Concurrency Control)
+
+Allows multiple users to access data without locking conflicts.
+
+---
+
+## 12. Views & Materialized Views
+
+Materialized views store query results physically for performance.
+
+---
+
+## 13. Functions & Stored Procedures
+
+Written in:
+
+- PL/pgSQL
+- Python
+- Perl
+- C
+
+---
+
+## 14. Extensions
+
+Popular extensions:
+
+- PostGIS (geospatial)
+- pg_trgm (text similarity)
+- uuid-ossp
+
+---
+
+## 15. Replication & Scaling
+
+- Streaming replication
+- Logical replication
+- Read replicas
+
+---
+
+## 16. Security
+
+- Role-based access
+- SSL connections
+- Row-level security
+
+---
+
+## 17. Use Cases
+
+- Web applications
+- GIS systems
+- Financial platforms
+- Analytics
+
+---
+
+## 18. Advantages
+
+- Extremely feature rich
+- Open source
+- Highly extensible
+
+---
+
+## 19. Limitations
+
+- Heavier than MySQL
+- More complex tuning

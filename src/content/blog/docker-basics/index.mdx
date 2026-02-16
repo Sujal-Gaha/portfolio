@@ -11,13 +11,13 @@ authors: ['sujal']
 
 Docker is an open-source platform for developing, shipping, and running applications inside containers. Containers are lightweight, portable, and isolated environments that package code and dependencies together, ensuring consistency across development, testing, and production. Unlike virtual machines, containers share the host OS kernel, making them efficient. Docker simplifies app development by solving "it works on my machine" issues.
 
-The key Docker concepts are explain in simple terms, covering what it is, key sub-concepts, basic CLI (Command Line Interface) commands, and real-world examples. To get started:
+The key Docker concepts are explained in simple terms, covering what it is, key sub-concepts, basic CLI (Command Line Interface) commands, and real-world examples. To get started:
 
 - Install Docker from the official website [docker](https://www.docker.com/) for your OS (e.g., Docker Desktop for Windows/Mac).
 - Verify installation: `docker --version`
 - Docker runs on Linux natively and on Windows/Mac, it uses a VM.
 - Commands are run in your terminal (e.g., bash, PowerShell).
-- Assume you have Docker installed and running. ALways check Docker docs for the latest details, as versions evolve (e.g., current version for me is 29.1.4).
+- Assume you have Docker installed and running. Always check Docker docs for the latest details, as versions evolve (e.g., current version for me is 29.1.4).
 
 ---
 
@@ -25,13 +25,13 @@ The key Docker concepts are explain in simple terms, covering what it is, key su
 
 #### What it is
 
-Images are **read-only templates** used to create containers. They include the app code, runtime, libraries, and configurations. They are like a **blueprint** for you app.
+Images are **read-only templates** used to create containers. They include the app code, runtime, libraries, and configurations. They are like a **blueprint** for your app.
 
 #### Key Concepts
 
 - **Base Image**: Starts from an official image (e.g., ubuntu, node).
-- **Layers**: Images are built in immultable layers for efficiency (caching during builds).
-- **Tags**: Versions like `ngingx:latest` or `nginx:1.29.4`.
+- **Layers**: Images are built in immutable layers for efficiency (caching during builds).
+- **Tags**: Versions like `nginx:latest` or `nginx:1.29.4`.
 - **Registry**: Where images are stored (e.g., Docker Hub, private registries).
 - **Pull/Push**: Download/upload images from registries.
 - **Size Optimization**: Use multi-stage builds to reduce final image size.
@@ -211,7 +211,7 @@ docker build --build-arg MY_VAR=value -t my-image:tag .
   CMD ["node", "app.js"]
   ```
 
-  - **Multi-State for Go App**: First stage compiles binary, second copies it to a minimal runtime image to reduce size.
+  - **Multi-Stage for Go App**: First stage compiles binary, second copies it to a minimal runtime image to reduce size.
 
   - **CI Integration**: In a pipeline, build and push images on code commit for automated deployments.
 
@@ -229,7 +229,7 @@ Volumes provide persistent storage for containers, allowing data to survive cont
 - **Persistence**: Data in volumes isn't deleted when containers stop.
 - **Mounting**: Attach to containers with `-v` or `--mount`.
 - **Sharing**: Multiple containers can share a volume.
-- **Backups**: Use `docker cp` or tools like `docker volumne export`.
+- **Backups**: Use `docker cp` or tools like `docker volume export`.
 
 #### Basic CLI Commands
 
