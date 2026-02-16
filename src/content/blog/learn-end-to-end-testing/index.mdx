@@ -1,0 +1,196 @@
+---
+title: 'Learn End-to-End Testing'
+description: 'Basics of end-to-end testing'
+date: 2026-02-17
+tags: ['testing']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## 1. Introduction
+
+E2E testing simulates **real user journeys** across the **entire application stack**. From UI/frontend to backend, database, external services, and APIs.
+
+It verifies that the system works **as a whole** in a production-like environment.
+
+### Key Concepts
+
+| Term              | Description                                            |
+| ----------------- | ------------------------------------------------------ |
+| **User Scenario** | Complete flow (e.g., "Login -> Add item -> Checkout"). |
+| **Black-Box**     | Tests from user's perspective (no code access).        |
+| **Flakiness**     | Common issue. Tests can fail due to timing/network.    |
+| **Test Data**     | Realistic data (often seeded via fixtures).            |
+| **Orchestration** | Tools launch browser, interact, assert UI/state.       |
+
+---
+
+## 2. Why End-to-End Testing?
+
+- **Realistic Validation**: Tests the **exact user experience** (UI clicks, network, DB persistence)
+- **Cross-Layer Bugs**: Finds issues spanning frontend/backend (e.g., API response breaks UI)
+- **Production Confidence**: Mimics live environment. Catches env-specific failures (auth, scaling)
+- **Business Alignment**: Directly maps to user stories/features
+- **Regression Safety (Level 3)**: Protects against breaking changes in refactors or new features
+- **Compliance & UX**: Verifies accessibility, performance, flows for audits/regulations
+
+---
+
+## 3. Code Examples
+
+### Python Example
+
+`pytest` + Playwright (Full Browser E2E for a Todo App)
+
+```python
+# app.py (Minimal Flask backend for demo)
+from flask import Flask, request, jsonify
+app = Flask(__name__)
+todos = []
+
+@app.route('/api/todos', methods=['POST'])
+def add_todo():
+    data = request.json
+    todos.append({"id": len(todos) + 1, "text": data['text'], "done": False})
+    return jsonify(todos[-1]), 201
+
+@app.route('/api/todos', methods=['GET'])
+def get_todos():
+    return jsonify(todos)
+
+if __name__ == '__main__':
+    app.run(port=5000)
+```
+
+```python
+# tests/test_e2e_todo.py
+import pytest
+from playwright.sync_api import Page, expect
+import subprocess
+import time
+
+@pytest.fixture(scope="session")
+def browser_context_args(browser_context_args):
+    return {**browser_context_args, "viewport": {"width": 1280, "height": 720}}
+
+@pytest.fixture(scope="module")
+def app_server():
+    """Start the Flask app in background for tests."""
+    process = subprocess.Popen(["python", "app.py"])
+    time.sleep(2)  # Wait for server
+    yield
+    process.terminate()
+
+def test_todo_full_flow(page: Page, app_server):
+    """E2E: Add todo → Mark done → Verify persistence."""
+    page.goto("http://localhost:5000")  # Assume frontend served here (or static HTML)
+
+    # UI interactions (assume simple HTML with JS fetching API)
+    page.fill("#todo-input", "Buy groceries")
+    page.click("#add-btn")
+
+    # Assert UI update
+    expect(page.locator(".todo-item")).to_have_text("Buy groceries")
+
+    # Mark as done
+    page.click(".todo-item >> text=Buy groceries >> .. >> button")
+    expect(page.locator(".todo-item.done")).to_be_visible()
+
+    # Refresh & verify backend persistence
+    page.reload()
+    expect(page.locator(".todo-item")).to_have_text("Buy groceries")
+    expect(page.locator(".todo-item.done")).to_be_visible()
+```
+
+**How to Run**:
+
+```bash
+playwright install  # Browsers
+pytest tests/test_e2e_todo.py -v --headed  # Headed for visual debug
+```
+
+---
+
+### JavaScript Example
+
+Playwright Test (E2E for Todo App API + UI)
+
+```javascript
+// server.js (Minimal Express backend)
+import "express" from "express";
+
+const app = express();
+app.use(express.json());
+
+let todos = [];
+
+app.post('/api/todos', (req, res) => {
+  const todo = { id: todos.length + 1, text: req.body.text, done: false };
+  todos.push(todo);
+  res.status(201).json(todo);
+});
+
+app.get('/api/todos', (req, res) => {
+  res.json(todos);
+});
+
+app.listen(3000, () => console.log('Server on 3000'));
+
+export { app }
+```
+
+```html
+// frontend.html (Simple static UI for demo)
+<!doctype html>
+<html>
+  <head>
+    <title>Todo</title>
+  </head>
+  <body>
+    <input id="todo-input" placeholder="New todo" />
+    <button id="add-btn">Add</button>
+    <ul id="todo-list"></ul>
+    <script>
+      async function loadTodos() {
+        const res = await fetch('/api/todos')
+        const data = await res.json()
+        // Render logic...
+      }
+      // Full JS for add/mark done...
+    </script>
+  </body>
+</html>
+```
+
+```javascript
+// tests/todo.e2e.spec.ts  (Playwright)
+import { test, expect } from '@playwright/test'
+
+test.describe('Todo E2E Flow', () => {
+  test('Full user journey: Add → Complete → Persist', async ({ page }) => {
+    await page.goto('http://localhost:3000') // Serve frontend + backend
+
+    // Add todo
+    await page.fill('#todo-input', 'Buy milk')
+    await page.click('#add-btn')
+
+    // UI assert
+    await expect(page.locator('.todo-item')).toHaveText('Buy milk')
+
+    // Mark done
+    await page.click('.todo-item >> text=Buy milk >> .. >> button')
+    await expect(page.locator('.todo-item.done')).toBeVisible()
+
+    // Refresh & re-verify
+    await page.reload()
+    await expect(page.locator('.todo-item')).toHaveText('Buy milk')
+    await expect(page.locator('.todo-item.done')).toBeVisible()
+  })
+})
+```
+
+**How to Run**:
+
+```bash
+npx playwright test todo.e2e.spec.ts --headed  # Or npx playwright test
+```
