@@ -1,0 +1,228 @@
+---
+title: 'Learn Integration Testing'
+description: 'Basics of integration testing'
+date: 2026-02-17
+tags: ['testing']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## 1. Introduction
+
+Integration testing is a **software testing level** that focuses on verifying the **interactions** and **interfaces** between different modules, components, services, or layers of the application when they are combined.
+
+It checks whether separately developed units work correctly together.
+
+### Key Concepts
+
+| Term                  | Description                                                                                                         |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Interface**         | The contract/boundary between two modules (API, function signature, message format, database schema, etc.)          |
+| **Integration Point** | Any place where two or more components communicate (API call, database query, message queue, file read/write, etc.) |
+| **Test Case**         | Scenario that exercises one or more integration points (e.g., "create user -> save to DB -> read back")             |
+| **Test Double**       | Lightweight replacement (mock, stub, fake, spy) sometimes still used, but less aggressively than in unit tests      |
+| **Test Fixture**      | Setup/teardown logic. Often real or test-specific database, message broker, file system state, etc.                 |
+| **Test Runner**       | Tool/framework that discovers, runs, and reports integration tests (pytest, Jest, Go test, etc.)                    |
+
+### Common Scope Levels
+
+- Component -> Component (e.g. service -> repository)
+- Service -> Service (microservices)
+- UI/API -> Backend -> Database
+- Backend -> External third-party API / message broker
+
+---
+
+## 2. Why Integration Testing?
+
+- **Catches interface mismatches**: Wrong field names, data type mismatches, incorrect order of parameters, missing / extra fields, version drift between services
+- **Reveals configuration & environment issues**: Connection strings, credentials, ports, timeouts, SSL, environment-specific behavior
+- **Verifies data flow & transformation**: Serialization/deserialization, mapping layers, business rules applied across modules
+- **Ensures correct collaboration**: Does the service actually persist data? Does the queue consumer understand the producer's messages?
+- **Safety net for module-level refactoring**: You can confidently change internal implementation as long as the integration contract stays the same
+- **Faster feedback than full E2E**: Much quicker and cheaper to run than browser-based or complete system tests
+- **Critical for microservices & distributed systems**: Most production outages happen at integration points, not inside single functions
+
+---
+
+## 3. Code Examples
+
+### Python Example
+
+Using `pytest` + real SQLite
+
+```python
+# user_repository.py
+import sqlite3
+
+class UserRepository:
+  def __init__(self, db_path=":memory:"):
+    self.conn = sqlite3.connect(db_path)
+    self.conn.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          email TEXT UNIQUE NOT NULL
+        )
+    """)
+
+  def create(self, name: str, email: str) -> int:
+    cur = self.conn.cursor()
+    cur.execute("INSERT INTO users (name, email) VALUES (?, ?)", (name, email))
+    self.conn.commit()
+    return cur.lastrowid
+
+  def find_by_id(self, user_id: int) -> dict | None:
+    cur = self.conn.cursor()
+    cur.execute("SELECT id, name, email FROM users WHERE id = ?", (user_id))
+    row = cur.fetchone()
+    return {"id": row[0], "name": row[1], "email": row[2]} if row else None
+
+  def close(self):
+    self.conn.close()
+```
+
+```python
+# user_service.py
+from user_repository import UserRepository
+
+class UserService:
+  def __init__(self, repository: UserRepository):
+    self.repository = repository
+
+  def register(self, name: str, email: str) -> dict:
+    if "@" not in email:
+      raise ValueError("Invalid email format")
+    user_id = self.repository.create(name, email)
+    return self.repository.find_by_id(user_id)
+```
+
+```python
+# tests/test_user_integration.py
+import pytest
+from user_repository import UserRepository
+from user_service import UserService
+
+@pytest.fixture
+def repo():
+  r = UserRepository()
+  yield r
+  r.close()
+
+def test_register_user_saves_and_returns_correct_data(repo):
+  service = UserService(repo)
+
+  created = service.register("John", "john@example.com")
+
+  assert created["id"] is not None
+  assert created["name"] == "John"
+  assert created["email"] == "john@example.com"
+
+  # Verify really in database
+  from_db = repo.find_by_id(created["id"])
+  assert from_db = created
+
+def test_register_rejects_invalid_email(repo):
+  service = UserService(repo)
+  with pytest.raises(ValueError, match="Invalid email"):
+    service.register("Bad", "not-an-email")
+```
+
+**How to Run**:
+
+```bash
+pytest tests/test_user_integration.py -v
+```
+
+---
+
+### JavaScript Example
+
+Using `jest` + in-memory or real DB
+
+```javascript
+// userRepository.js
+export class UserRepository {
+  constructor() {
+    this.db = new Map() // simulating DB
+    this.nextId = 1
+  }
+
+  async create(name, email) {
+    if (this.db.has(email)) throw new Error('Email already exists')
+    const id = this.nextId++
+    const user = {
+      id,
+      name,
+      email,
+    }
+    this.db.set(email, user)
+    return id
+  }
+
+  async findById(id) {
+    for (const user of this.db.values()) {
+      if (user.id === id) return user
+    }
+    return null
+  }
+}
+```
+
+```javascript
+// userService.js
+export class UserService {
+  constructor(repository) {
+    this.repository = repository
+  }
+
+  async register(name, email) {
+    if (!email.includes('@')) {
+      throw new Error('Invalid email format')
+    }
+    const id = await this.repository.create(name, email)
+    return this.repository.findById(id)
+  }
+}
+```
+
+```javascript
+// userService.integration.test.js
+import { UserRepository } from './userRepository'
+import { UserService } from './userService'
+
+describe('UserService + UserRepository integration', () => {
+  let repo
+  let service
+
+  beforeEach(() => {
+    repo = new UserRepository()
+    service = new UserService(repo)
+  })
+
+  test('register -> saves user and returns correct data', async () => {
+    const created = await service.register('John', 'john@example.com')
+
+    expect(created).toMatchObject({
+      id: expect.any(Number),
+      name: 'John',
+      email: 'john@example.com',
+    })
+
+    const fromDb = await repo.findById(created.id)
+    expect(fromDb).toEqual(created)
+  })
+
+  test('register -> rejects invalid email', async () => {
+    await expect(service.register('Bad', 'invalid-email')).rejects.toThrow(
+      'Invalid email format',
+    )
+  })
+})
+```
+
+**How to Run**:
+
+```bash
+npx jest userService.integration.test.js
+```

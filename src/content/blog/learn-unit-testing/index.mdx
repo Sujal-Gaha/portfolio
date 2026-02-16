@@ -1,0 +1,190 @@
+---
+title: 'Learn Unit Testing'
+description: 'Basics of unit testing'
+date: 2026-02-17
+tags: ['testing', 'python', 'javascript']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## 1. Introduction
+
+Unit testing is a **software testing technique** where **individual units** (smallest testable parts) of an application are tested **in isolation**.
+
+A **unit** = a single function, method, class, or module (e.g., `addNumbers()` or a user login validator).
+
+Goal: Verify that each unit behaves **exactly as expected** under various conditions.
+
+### Key Concepts
+
+| Term            | Description                                                                  |
+| --------------- | ---------------------------------------------------------------------------- |
+| **Test Case**   | A single test for one scenario (e.g., "positive numbers").                   |
+| **Test Suite**  | Collection of related test cases.                                            |
+| **Assertion**   | Check if output matches expectation (e.g., `assertEqual(actual, expected)`). |
+| **Mocking**     | Simulate dependencies (e.g., fake database) to keep tests isolated.          |
+| **Test Runner** | Tool that executes tests and reports results (pass/fail).                    |
+
+### How it Fits in Development
+
+Part of **Test-Driven Development (TDD)**: Write tests **before** code -> Write code to pass tests -> Refactor.
+
+---
+
+## 2. Why Unit Testing?
+
+- **Early Bug Detection**: Finds issues at the **unit level** before they spread to integration/system testing. Saves **10x time & cost** later.
+- **Better Code Quality**: Forces **modular, clean code** (small functions = easier to test).
+- **Safe Refactoring**: Change code confidently as tests act as a **safety net**. If tests pass, behavior is unchanged.
+- **Living Documentation**: Tests describe **how code should work** (e.g., "This function returns sum for positives").
+- **Faster Debugging**: Failues pinpoint **exact location** (vs. hunting in a huge app).
+- **Team Collaboration**: New devs understand code via tests. CI/CD pipelines run tests automatically.
+- **Business Impact**: Fewer production bugs -> Happier users, lower maintenance costs. **Stats**: Companies using unit testing ship **2-3x faster** with **90% fewer defects**.
+
+---
+
+## 3. Code Examples
+
+### Python Example
+
+Using `unittest` - Built-in Framework
+
+```python
+# math_utils.py - The code to test
+def add(x: int, y: int) -> int:
+  """Returns sum of two integers. Handles negatives."""
+  if not isinstance(x, int) or not isinstance(y, int):
+    raise TypeError("Inputs must be integers")
+  return x + y
+
+def is_even(n: int) -> bool:
+  """Checks if number is even."""
+  return n % 2 == 0
+```
+
+```python
+# test_math_utils.py - The unit tests
+import unittest
+from math_utils import add, is_even
+
+Class TestMathUtils(unittest.TestCase):
+
+  def test_add_positive(self):
+    """Test addition of positive numbers."""
+    self.assertEqual(add(5, 3), 8)  # Assertion
+
+  def test_add_negative(self):
+    """Test addition with negatives."""
+    self.assertEqual(add(-2, 7), 5)
+    self.assertEqual(add(-5, -3), -8)
+
+  def test_add_zero(self):
+    """Edge case: Zero."""
+    self.assertEqual(add(0, 10), 10)
+
+  def test_add_type_error(self):
+    """Test invalid input raises error."""
+    with self.assertRaises(TypeError):
+      add("a", 5)  # String input
+
+  def test_is_even_true(self):
+    """Even numbers."""
+    self.assertTrue(is_even(4))
+    self.assertTrue(is_even(0))
+
+  def test_is_even_false(self):
+    """Odd numbers."""
+    self.assertFalse(is_even(7))
+
+if __name__ == '__main__':
+  unittest.main()  # Run tests: python test_math_utils.py
+```
+
+**How to Run**:
+
+```bash
+python -m unittest test_math_utils.py -v  # Verbose output
+```
+
+**Output** (if all pass):
+
+```bash
+....
+----------------------------------------------------------------------
+Ran 6 tests in 0.001s
+
+OK
+```
+
+---
+
+### JavaScript Example
+
+Using `jest` - Popular Testing Framework
+
+```javascript
+// mathUtils.js - The code to test
+export const add = (x, y) => {
+  /** Returns sum of two numbers. Handles negatives. */
+  if (typeof x !== 'number' || typeof y !== 'number') {
+    throw new TypeError('Inputs must be numbers')
+  }
+  return x + y
+}
+
+export const isEven = (n) => {
+  /** Checks if number is even. */
+  return n % 2 === 0
+}
+```
+
+```javascript
+// mathUtils.test.js - The unit tests
+import { add, isEven } from './mathUtils'
+
+describe('Math Utils', () => {
+  test('add: positive numbers', () => {
+    expect(add(5, 3)).toBe(8) // Assertion
+  })
+
+  test('add: negative numbers', () => {
+    expect(add(-2, 7)).toBe(5)
+    expect(add(-5, -3)).toBe(-8)
+  })
+
+  test('add: zero edge case', () => {
+    expect(add(0, 10)).toBe(10)
+  })
+
+  test('add: throws TypeError for non-numbers', () => {
+    expect(() => add('a', 5)).toThrow(TypeError)
+  })
+
+  test('isEven: true for evens', () => {
+    expect(isEven(4)).toBe(true)
+    expect(isEven(0)).toBe(true)
+  })
+
+  test('isEven: false for odds', () => {
+    expect(isEven(7)).toBe(false)
+  })
+})
+```
+
+**How to Run**:
+
+```bash
+npx jest mathUtils.test.js --watch  # Or just npx jest
+```
+
+**Output** (if all pass):
+
+```bash
+PASS  ./mathUtils.test.js
+  Math Utils
+    ✓ add: positive numbers (2 ms)
+    ✓ add: negative numbers
+    ...
+Test Suites: 1 passed, 1 total
+Tests:       6 passed, 6 total
+```

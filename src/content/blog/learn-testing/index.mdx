@@ -1,0 +1,103 @@
+---
+title: 'Learn Testing'
+description: 'List of all types of testing'
+date: 2026-02-17
+tags: ['testing']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## Black Box Testing
+
+Black box testing (also known as **behavioral or specification-based** testing) focuses on the **external functionality** of the software **without any knowledge of its internal code structure, design, or implementation**.
+
+Testers treat the system as a "black box" and validate it based on inputs, outputs, and requirements.
+
+- **Functional Testing**: Verifies that the software performs as per specified requirements.
+
+  - Unit Testing (functional variant)
+  - Integration Testing (functional variant)
+  - System Testing
+  - Acceptance Testing (including User Acceptance Testing or UAT)
+  - End-to-End Testing
+  - Smoke Testing (basic build verification)
+  - Sanity Testing (quick post-change checks)
+
+- **Non-Functional Testing**: Evaluates aspects like performance, security, and usability.
+
+  - Performance Testing
+
+    - Load Testing
+    - Stress Testing
+    - Spike Testing
+    - Scalability Testing
+    - Endurance Testing (or Soak Testing)
+    - Volume Testing
+    - Stability Testing
+
+  - Usability Testing
+  - Security Testing (e.g., black-box penetration testing)
+  - Compatibility Testing
+  - Localization and Internationalization Testing
+  - UI Testing
+  - Reliability Testing
+
+- **Regression Testing:** Ensures new changes don't break existing functionality (commonly black box).
+
+- **Other Black Box Techniques:**
+  - Equivalence Partitioning
+  - Boundary Value Analysis
+  - Decision Table Testing
+  - State Transition Testing
+  - Cause-Effect Graphing
+  - Exploratory Testing
+  - Ad-hoc Testing
+  - Fuzz Testing
+  - Alpha Testing (internal user validation)
+  - Beta Testing (external user validation)
+
+---
+
+## White Box Testing
+
+White box testing (also known as structural, glass box, or **code-based** testing) examines the internal structure, logic, and code paths of the software.
+
+Testers have full access to the source code, architecture, and implementation details.
+
+- **Unit Testing**: Tests individual components or functions in isolation.
+- **Integration Testing** (structural variant): Verifies interactions between modules using code knowledge.
+- **Path Testing** (or Basis Path Testing): Ensures all possible execution paths are covered.
+- **Loop Testing**: Validates loops (simple, nested, concatenated) for correct behavior.
+- **Mutation Testing**: Introduces small code changes to assess test suite effectiveness.
+- **Static Code Analysis**: Reviews code without execution for issues like syntax errors or vulnerabilities.
+- **Dynamic Code Analysis**: Analyzes code behavior during runtime.
+- **Coverage-Based Techniques**:
+  - Statement Coverage
+  - Branch Coverage (or Decision Coverage)
+  - Condition Coverage
+  - Multiple Condition Coverage
+  - Data Flow Testing
+  - Control Flow Testing
+- **Penetration Testing** (white-box variant): Full internal access to simluate insider threats.
+
+---
+
+## Gray Box Testing
+
+Gray box testing is a hybrid approach combining black box (external functionality) and white box (partial internal knowledge).
+
+Testers have limited access to internals, such as architecture diagrams or database schemas, but not full code.
+
+- **Matrix Testing**: Analyzes variables and their risks (business/technical).
+- **Pattern Testing**: Identifies defect patterns from past failures.
+- **Orthogonal Array Testing**: Uses efficient combinations of inputs for coverage.
+- **Regression Testing** (gray-box variant): Re-tests with partial internals.
+- **State Transition Testing** (gray-box variant): Tracks state changes with some structural insight.
+- **Data Flow Testing**: Examines variable usage and flows.
+- **API Testing**: Tests interfaces with partial knowledge of backend logic.
+- **Database Testing**: Validates data handling with schema access.
+- **Integration Testing** (gray-box variant): Combines modules with limited internals.
+- **Penetration Testing** (gray-box variant): Simulates attacks with some system knowledge.
+- **Security Testing** (gray-box variant): Partial access to uncover hidden vulnerabilities.
+- **Performance Testing** (gray-box variant): Some internal metrics for load analysis.
+- **Fault Injection Testing**: Introduces faults with partial code awareness.
