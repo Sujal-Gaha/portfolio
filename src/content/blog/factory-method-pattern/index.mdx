@@ -1,0 +1,163 @@
+---
+title: 'Factory Method Pattern'
+description: 'Fundamentals of Factory Method Pattern'
+date: 2026-02-18
+tags: ['design-pattern', 'factory-method-pattern', 'creational-design-pattern']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## 1. Introduction
+
+The **Factory Method** pattern (also known as Virtual Constructor) is one of the most widely used **Creational Design Patterns**. It defines an **interface for creating an object**, but lets concrete subclasses decide which class to instantiate. This pattern is especially powerful when you need to delegate instantiation responsibility to subclasses while keeping the client code independent of concrete product classes.
+
+It enables adherence to the **Open-Closed Principle** (open for extension, closed for modification) and helps eliminate conditional creation logic scattered throughout the codebase.
+
+## 2. Code Example
+
+### Bad Approach
+
+Hardcoded Conditional Creation (Tight Coupling & Violation of OCP)
+
+```python
+class PDFDocument:
+  def render(self):
+    return "Rendering PDF document"
+
+class WordDocument:
+  def render(self):
+    return "Rendering Word document"
+
+class ExcelDocument:
+  def render(self):
+    return "Rendering Excel spreadsheet"
+
+# Client code - fragile and violates open-closed principle
+def create_document(file_type: str):
+  ft = file_type.lower()
+  if ft == "pdf":
+    return PDFDocument()
+  elif ft == "word":
+    return WordDocument()
+  elif ft == "excel":
+    return ExcelDocument()
+  else:
+    raise ValueError(f"Unsupported document type: {file_type}")
+
+# Usage
+doc = create_document("pdf")
+print(doc.render())  # Rendering PDF document
+```
+
+**Problems:**
+
+- Every new document type requires modifying this function
+- High cyclomatic complexity grows with each format
+- Client is tightly coupled to concrete classes
+
+### Good Approach
+
+Factory Method Pattern (Polymorphic Creation)
+
+```python
+from abc import ABC, abstractmethod
+
+# Product - common interface
+class Document(ABC):
+  @abstractmethod
+  def render(self) -> str:
+    pass
+
+# Concrete products
+class PDFDocument(Document):
+  def render(self) -> str:
+    return "Rendering PDF document"
+
+class WordDocument(Document):
+  def render(self) -> str:
+    return "Rendering Word document"
+
+class ExcelDocument(Document):
+  def render(self) -> str:
+    return "Rendering Excel spreadsheet"
+
+# Creator - declares factory method + business logic using the product
+class DocumentCreator(ABC):
+  @abstractmethod
+  def create_document(self) -> Document:
+    """Factory Method - concrete subclasses decide the type"""
+    pass
+
+  def process_and_render(self) -> str:
+    """Core logic that uses the created document"""
+    doc = self.create_document()
+    return f"Processing document... {doc.render()}"
+
+# Concrete creators
+class PDFCreator(DocumentCreator):
+  def create_document(self) -> Document:
+    return PDFDocument()
+
+class WordCreator(DocumentCreator):
+  def create_document(self) -> Document:
+    return WordDocument()
+
+class ExcelCreator(DocumentCreator):
+  def create_document(self) -> Document:
+    return ExcelDocument()
+
+# Client - depends only on abstraction
+
+def client_code(creator: DocumentCreator):
+  print(creator.process_and_render())
+
+# Usage
+client_code(PDFCreator())   # Processing document... Rendering PDF document
+client_code(WordCreator())  # Processing document... Rendering Word document
+client_code(ExcelCreator()) # Processing document... Rendering Excel spreadsheet
+```
+
+Adding a new format (e.g. MarkdownDocument) requires **only** creating two new classes (no changes to existing client or factory code).
+
+---
+
+## 3. Complexities & Coupling Reduced/Solved
+
+| Problem                            | How Factory Method Helps                                                              | Benefit Level |
+| ---------------------------------- | ------------------------------------------------------------------------------------- | ------------- |
+| Tight coupling to concrete classes | Client depends only on abstract Creator & Product interfaces                          | High          |
+| Large conditional block (if/elif)  | Replaced by polymorphic method dispatch                                               | High          |
+| Violation of Open-Closed Principle | New product types added via new factory subclasses (no modification of existing code) | Very High     |
+| Duplicated creation logic          | Creation centralized in one method per concrete factory                               | Medium-High   |
+| Difficult testability              | Easy to inject/test different factories                                               | High          |
+| High cyclomatic complexity         | Removes branching from client code                                                    | High          |
+
+---
+
+## 4. When to Use Factory Method
+
+- You want to **localize** object creation logic in one place per product family
+- The exact type of object to create should be determined at **runtime** by subclasses
+- You are building **extensible frameworks** or plugins (IDEs, report generators, game entity factories, GUI widget factories, payment processors...)
+- You want to apply the **dependency inversion principle** to object creation
+- You need different **creation paths** for the same product hierarchy in different contexts
+
+**Common real-world examples:**
+
+- Document/view architecture in GUI frameworks
+- Logger factories (ConsoleLogger, FileLogger, CloudLogger...)
+- Database connection factories (MySQL, PostgreSQL, SQLite...)
+- Payment gateway factories (Stripe, PayPal, Razorpay...)
+
+---
+
+## 5. When Not to Use Factory Method
+
+Avoid when:
+
+- Object creation is trivial (simple constructor call with no variation)
+- You have a **fixed, small, unchanging** set of product types
+- You're writing a very small script/prototype where abstraction cost outweighs benefit
+- The creation logic is **highly context-dependent** and better handled with [Builder](/blog/builder-pattern) or **Prototype**
+- Performance-critical hot path where virtual method call overhead is measurable
+- You are tempted to use it just because "it's a creational pattern" (this lead to over-abstraction)
