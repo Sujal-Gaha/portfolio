@@ -1,0 +1,223 @@
+---
+title: 'Builder Pattern'
+description: 'Fundamentals of Builder Pattern'
+date: 2026-02-18
+tags: ['design-pattern', 'builder-pattern', 'creational-design-pattern']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## 1. Introduction
+
+The **Builder** pattern (also known as Generator) is one of the most widely used **Creational Design Patterns**. It separates the **construction of a complex object** from its representation, allowing the same construction process to create different representations. This pattern is especially powerful when you need to assemble objects with many optional or configurable components, while keeping the client code simple, readable, and independent of the intricate construction logic.
+
+It enables adherence to the **Open-Closed Principle** (open for extension, closed for modification) and helps avoid issues like telescoping constructors or mutable state during object assembly.
+
+---
+
+## 2. Code Example
+
+### Bad Approach
+
+Hardcoded Conditional Creation (Tight Coupling & Violation of OCP)
+
+```python
+class House:
+  def __init__(
+    self,
+    walls: int = 0,
+    doors: int = 0,
+    windows: int = 0,
+    roof: bool = False,
+    garage: bool = False,
+    pool: bool = False,
+  ):
+    self.walls = walls
+    self.doors = doors
+    self.windows = windows
+    self.roof = roof
+    self.garage = garage
+    self.pool = pool
+
+  def describe(self) -> str:
+    return f"House with {self.walls} walls, {self.doors} doors, {self.windows} windows, roof: {self.roof}, garage: {self.garage}, pool: {self.pool}"
+
+
+# Client code - fragile and violates open-closed principle
+basic_house = House(walls=4, doors=2, windows=4, roof=True)
+luxury_house = House(walls=6, doors=4, windows=8, roof=True, garage=True, pool=True)
+print(basic_house.describe())   # House with 4 walls, 2 doors, 4 windows, roof: True, garage: False, pool: False
+print(luxury_house.describe())  # House with 6 walls, 4 doors, 8 windows, roof: True, garage: True, pool: True
+```
+
+**Problems:**
+
+- Telescoping constructor: Adding new features (e.g., garden) requires modifying the init signature, breaking existing code
+- High parameter count leads to unreadable calls and error-prone defaults
+- Client is tightly coupled to construction details and must know all options upfront
+
+### Good Approach
+
+Builder Pattern (Step-by-Step Construction)
+
+```python
+from abc import ABC, abstractmethod
+
+# Product - the complex object
+class House:
+  def __init__(self):
+    self.walls = 0
+    self.doors = 0
+    self.windows = 0
+    self.roof = False
+    self.garage = False
+    self.pool = False
+
+  def describe(self) -> str:
+    return f"House with {self.walls} walls, {self.doors} doors, {self.windows} windows, roof: {self.roof}, garage: {self.garage}, pool: {self.pool}"
+
+# Abstract Builder - declares steps for building the product
+class HouseBuilder(ABC):
+  @abstractmethod
+  def reset(self):
+    pass
+
+  @abstractmethod
+  def build_walls(self):
+    pass
+
+  @abstractmethod
+  def build_doors(self):
+    pass
+
+  @abstractmethod
+  def build_windows(self):
+    pass
+
+  @abstractmethod
+  def build_roof(self):
+    pass
+
+  @abstractmethod
+  def build_garage(self):
+    pass
+
+  @abstractmethod
+  def build_pool(self):
+    pass
+
+  @abstractmethod
+  def get_result(self) -> House:
+    pass
+
+# Concrete Builder - implements the steps
+class ConcreteHouseBuilder(HouseBuilder):
+  def __init__(self):
+    self.reset()
+
+  def reset(self):
+    self.house = House()
+
+  def build_walls(self):
+    self.house.walls = 4  # Default, can be customized
+
+  def build_doors(self):
+    self.house.doors = 2
+
+  def build_windows(self):
+    self.house.windows = 4
+
+  def build_roof(self):
+    self.house.roof = True
+
+  def build_garage(self):
+    self.house.garage = True
+
+  def build_pool(self):
+    self.house.pool = True
+
+  def get_result(self) -> House:
+    return self.house
+
+
+# Director - optional, orchestrates the building process
+class Director:
+  def __init__(self, builder: HouseBuilder):
+    self.builder = builder
+
+  def construct_basic_house(self):
+    self.builder.reset()
+    self.builder.build_walls()
+    self.builder.build_doors()
+    self.builder.build_windows()
+    self.builder.build_roof()
+
+  def construct_luxury_house(self):
+    self.builder.reset()
+    self.builder.build_walls()
+    self.builder.build_doors()
+    self.builder.build_windows()
+    self.builder.build_roof()
+    self.builder.build_garage()
+    self.builder.build_pool()
+
+# Client - depends only on abstraction
+builder = ConcreteHouseBuilder()
+director = Director(builder)
+
+director.construct_basic_house()
+basic_house = builder.get_result()
+
+print(basic_house.describe())   # House with 4 walls, 2 doors, 4 windows, roof: True, garage: False, pool: False
+
+director.construct_luxury_house()
+luxury_house = builder.get_result()
+
+print(luxury_house.describe())  # House with 4 walls, 2 doors, 4 windows, roof: True, garage: True, pool: True
+```
+
+Adding a new feature (e.g., garden) requires **only** adding methods to the builder interface and implementations (no changes to existing client or product code).
+
+---
+
+## 3. Complexities & Coupling Reduced/Solved
+
+| Problem                                      | How Builder Helps                                                                    | Benefit Level |
+| -------------------------------------------- | ------------------------------------------------------------------------------------ | ------------- |
+| Tight coupling to construction details       | Client interacts via simple director or fluent builder methods, unaware of internals | High          |
+| Telescoping constructors/parameter explosion | Replaces long init lists with step-by-step methods for optional parts                | High          |
+| Violation of Open-Closed Principle           | New features added by extending builder without modifying existing classes           | Very High     |
+| Duplicated or scattered assembly logic       | Construction centralized in builder, reusable across representations                 | Medium-High   |
+| Difficult testability                        | Easy to mock/substitute builders from different configurations                       | High          |
+| High cyclomatic complexity in creation       | Breaks complex init into simple, sequential steps                                    | High          |
+
+---
+
+## 4. When to Use Builder
+
+- You need to construct **complex objects** with many optional or configurable parts (e.g., avoiding massive constructors)
+- The same construction process should create **different representations** or variants of the object
+- You want **step-by-step assembly** to make code more readable and flexible (e.g., fluent interfaces)
+- Building immutable objects where parameters are set incrementally before finalization
+- Systems with **director classes** to orchestrate common build recipes
+
+**Common real-world examples:**
+
+- String builders (e.g., Java's StringBuilder for efficient string assembly)
+- GUI form builders (adding labels, buttons, fields step-by-step)
+- Meal/order builders (e.g., burger with optional toppings, sides)
+- Configuration objects (e.g., HTTP requests with headers, params, body)
+
+---
+
+## 5. When Not to Use Builder
+
+Avoid when:
+
+- Object creation is simple (few parameters, no variation)
+- You have a **fixed, small** set of configurations without need for steps
+- You are writing a very small script/prototype where fluency adds unnecessary classes
+- The object is mutable and doesn't require immutability or complex assembly (prefer setters)
+- Performance-critical paths where extra method calls introduce overhead
+- Overlapping with other patterns (e.g., if family consistency is key, prefer [Abstract Factory](/blog/abstract-factory-pattern))
+- You are tempted to use it just because "it's a creational pattern" (this leads to over-abstraction)

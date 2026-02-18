@@ -1,0 +1,188 @@
+---
+title: 'Abstract Factory Pattern'
+description: 'Fundamentals of Abstract Factory Pattern'
+date: 2026-02-18
+tags:
+  ['design-pattern', 'abstract-factory-pattern', 'creational-design-pattern']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## 1. Introduction
+
+The **Abstract Factory** pattern (also known as Kit) is one of the most widely used **Creational Design Patterns**. It provides an **interface for creating families of related or dependent objects** without specifying their concrete classes. This pattern is especially powerful when you need to ensure consistency across multiple interdependent products (e.g., by theme, platform, or variant), while keeping the client code independent of concrete implementations and avoiding scattered conditional logic for multi-object creation.
+
+It enables adherence to the **Open-Closed Principle** (open for extension, closed for modification) and helps manage complexity in systems requiring coordinated object groups.
+
+---
+
+## 2. Code Example
+
+### Bad Approach
+
+Hardcoded Conditional Creation (Tight Coupling & Violation of OCP)
+
+```python
+class WindowsButton:
+  def paint (self):
+    return "Painting Windows button"
+
+class WindowsScrollbar:
+  def scroll(self):
+    return "Scrolling Windows scrollbar"
+
+class MacButton:
+  def paint(self):
+    return "Painting Mac button"
+
+class MacScrollbar:
+  def scroll(self):
+    return "Scrolling Mac scrollbar"
+
+# Client code - fragile and violates open-closed principle
+def create_widgets(os_type: str):
+  if os_type.lower() == "windows":
+    button = WindowsButton()
+    scrollbar = WindowsScrollbar()
+  elif os_type.lower() == "mac":
+    button = MacButton()
+    scrollbar = MacScrollbar()
+  else:
+    raise ValueError(f"Unsupported OS type: {os_type}")
+  return button, scrollbar
+
+# Usage
+button, scrollbar = create_widgets("windows")
+print(button.paint())      # Painting Windows button
+print(scrollbar.scroll())  # Scrolling Windows scrollbar
+```
+
+**Problems:**
+
+- Every new platform or widget requires modifying this function, risking inconsistencies across products
+- High cyclomatic complexity grows with each variant and additional related object
+- Client is tightly coupled to concrete classes and must orchestrate multiple creations manually
+
+### Good Approach
+
+Abstract Factory Pattern (Polymorphic Creation of Related Products)
+
+```python
+from abc import ABC, abstractmethod
+
+# Product interfaces
+class Button(ABC):
+  @abstractmethod
+  def paint(self) -> str:
+    pass
+
+class Scrollbar(ABC):
+  @abstractmethod
+  def scroll(self) -> str:
+    pass
+
+# Concrete products for Windows family
+class WindowsButton(Button):
+  def paint(self) -> str:
+    return "Painting Windows button"
+
+class WindowsScrollbar(Scrollbar):
+  def scroll(self) -> str:
+    return "Scrolling Windows scrollbar"
+
+# Concrete products for Mac family
+class MacButton(Button):
+  def paint(self) -> str:
+    return "Painting Mac button"
+
+class MacScrollbar(Scrollbar):
+  def scroll(self) -> str:
+    return "Scrolling Mac scrollbar"
+
+# Abstract Factory - declares methods for each product in the family
+class WidgetFactory(ABC):
+  @abstractmethod
+  def create_button(self) -> Button:
+    """Factory method for Button"""
+    pass
+
+  @abstractmethod
+  def create_scrollbar(self) -> Scrollbar:
+  """Factory method for Scrollbar"""
+  pass
+
+# Concrete factories for each family
+class WindowsWidgetFactory(WidgetFactory):
+  def create_button(self) -> Button:
+    return WindowsButton()
+
+  def create_scrollbar(self) -> Scrollbar:
+    return WindowsScrollbar()
+
+class MacWidgetFactory(WidgetFactory):
+  def create_button(self) -> Button:
+    return MacButton()
+
+  def create_scrollbar(self) -> Scrollbar:
+    return MacScrollbar()
+
+# Client - depends only on abstraction
+def client_code (factory: WidgetFactory):
+  button = factory.create_button()
+  scrollbar = factory.create_scrollbar()
+  print(button.paint())
+  print(scrollbar.scroll())
+
+# Usage
+client_code(WindowsWidgetFactory())  # Painting Windows button
+                                     # Scrolling Windows scrollbar
+client_code(MacWidgetFactory())      # Painting Mac button
+                                     # Scrolling Mac scrollbar
+```
+
+Adding a new family (e.g., Linux widgets) or product (e.g., Checkbox) requires **only** creating new classes and extending the abstract factory interface (no changes to existing client or concrete factory code).
+
+---
+
+## 3. Complexities & Coupling Reduced/Solved
+
+| Problem                                                | How Abstract Factory Helps                                                                   | Benefit Level |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------- | ------------- |
+| Tight coupling to concrete classes                     | Client depends only on abstract Factory & Product interfaces for entire families             | High          |
+| Large conditional blocks for multiple related products | Replaced by polymorphic dispatch across coordinated product methods                          | High          |
+| Violation of Open-Closed Principle                     | New families or products added via new factory subclasses (no modification of existing code) | Very High     |
+| Duplicated creation logic for interdependent objects   | Creation centralized in one factory per family, ensuring compatibility                       | Medium-High   |
+| Difficult testability                                  | Easy to inject/test different family factories                                               | High          |
+| High cyclomatic complexity                             | Removes multi-product branching from client code                                             | High          |
+
+---
+
+## 4. When to Use Abstract Factory
+
+- You need to create **families of related or dependent objects** that must remain consistent (e.g., all from the same platform, theme, or configuration variant)
+- The client should **not know or care** about concrete classes for multiple products (just switch the entire "kit" at runtime)
+- Building systems where products have **interdependencies** or stylistic/compatibility requirements (cross-platform GUIs, themed asset packs, configuration families)
+- You want to apply dependency inversion to **groups** of creations, not just one
+- Runtime selection of a complete **product family/variant** without client branching
+
+**Common real-world examples:**
+
+- GUI toolkits (buttons, scrollbars, windows, menus all matching Windows/Mac/Linux)
+- Themed UI components (Dark/Light mode sets, Modern/Victorian furniture styles)
+- Game worlds (fantasy vs sci-fi: weapons + armor + vehicles that fit the theme)
+- Database abstraction layers (SQL family: connection + command + reader vs NoSQL equivalents)
+
+---
+
+## 5. When not to Use Abstract Factory
+
+Avoid when:
+
+- You only need to create **a single object type** (use Factory Method or a simple parameterized factory instead, less overhead)
+- Product families are **not interdependent** or don't require consistency (overkill abstraction)
+- Object creation is trivial (simple constructors with no family dependencies)
+- You have a **fixed, small, unchanging** set of product families
+- You are writing a very small script/prototype where abstraction cost outweighs benefit
+- The creation logic is **highly variable per object** and better handled with [Builder](/blog/builder-pattern) or **Prototype**
+- Performance-critical hot path where multiple virtual method calls add measurable overhead
+- You are tempted to use it just because "it's a creational pattern" (this lead to over-abstraction)

@@ -18,7 +18,7 @@ export const SITE: Site = {
   EMAIL: 'suzalgahamagar@gmail.com',
   NUM_POSTS_ON_HOMEPAGE: 3,
   POSTS_PER_PAGE: 4,
-  SITEURL: 'https://sujalgahamagar.com.np/',
+  SITEURL: 'https://sujalgahamagar.com.np',
 }
 
 export const NAV_LINKS: Link[] = [
