@@ -1,0 +1,166 @@
+---
+title: 'State Pattern'
+description: 'Fundamentals of State Pattern'
+date: 2026-02-19
+tags: ['design-pattern', 'state-pattern', 'behavioral-design-pattern']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## 1. Introduction
+
+The **State** pattern (also known as Objects for States) is one of the most widely used **Behavioral Design Patterns**. It allows an object to **alter its behavior** when its internal state changes, making it appear as though the object's class has changed. This pattern is especially powerful in systems with complex conditional logic based on state, encapsulating state-specific behaviors into separate classes for better maintainability and extensibility, while keeping the client code simple and unaware of state transitions.
+
+It enables adherence to the **Open-Closed Principle** (open for extension, closed for modification) and helps eliminate massive if-else switch statements by delegating behavior to polymorphic state objects.
+
+---
+
+## 2. Code Example
+
+### Bad Approach
+
+Hardcoded Conditional Creation (Tight Coupling & Violation of OCP)
+
+```python
+class Order:
+  def __init__(self):
+    sel.status = "new"  # Initial state
+
+  def ship(self):
+    if self.status == "new":
+      self.status = "shipped"
+      return "Order shipped"
+    elif self.status == "shipped":
+      return "Order already shipped"
+    elif self.status == "delivered":
+      return "Order already delivered"
+    else:
+      raise ValueError("Invalid status")
+
+  def deliver(self):
+    if self.status == "shipped":
+      self.status = "delivered":
+      return "Order delivered"
+    elif self.status == "new":
+      return "Cannot deliver without shipping"
+    elif self.status == "delivered":
+      return "Order already delivered"
+    else:
+      raise ValueError("Invalid status")
+
+# Client code - fragile and violates open-closed principle
+order = Order()
+print(order.ship())     # Order shipped
+print(order.deliver())  # Order delivered
+```
+
+**Problems:**
+
+- Every new state or action requires modifying multiple methods with growing if-elif chains
+- High cyclomatic complexity and duplicated state checks across methods
+- Client indirectly coupled to all states; adding states breaks existing code
+
+### Good Approach
+
+State Pattern (Encapsulated State Behaviors)
+
+```python
+from abc import ABC, abstractmethod
+
+# State interface
+class OrderState(ABC):
+  @abstractmethod
+  def ship(self, order):
+    pass
+
+  @abstractmethod
+  def deliver(self, order):
+    pass
+
+# Concrete states
+class NewState(OrderState):
+  def ship(self, order):
+    order.set_state(ShippedState())
+    return "Order shipped"
+
+  def deliver(self, order):
+    return "Cannot deliver without shipping"
+
+class ShippedState(OrderState):
+  def ship(self, order):
+    return "Order already shipped"
+
+  def deliver(self, order):
+    order.set_state(DeliveredState())
+    return "Order delivered"
+
+class DeliveredState(OrderState):
+  def ship(self, order):
+    return "Order already delivered"
+
+  def deliver(self, order):
+    return "Order already delivered"
+
+# Context-manages the current state
+class Order:
+  def __init__(self):
+    self._state = NewState()  # Initial state
+
+  def set_state(self, state: OrderState):
+    self._state = state
+
+  def deliver(self):
+    return self._state.deliver(self)
+
+# Client - depends only on abstraction
+order = Order()
+
+print(order.ship())     # Order shipped
+print(order.deliver())  # Order delivered
+```
+
+Adding a new state (e.g., CancelledState) or action (e.g., cancel) requires **only** creating a new state class and updating the interface (no changes to existing Order class or client code).
+
+---
+
+## 3. Complexities & Coupling Reduced/Solved
+
+| Problem                                   | How State Helps                                                        | Benefit Level |
+| ----------------------------------------- | ---------------------------------------------------------------------- | ------------- |
+| Tight coupling to state-specific logic    | Behaviors delegated to swappable state objects; context uses interface | High          |
+| Large conditional blocks (if-elif/switch) | Replaced by polymorphic calls in state classes                         | High          |
+| Violation of Open-Closed Principle        | New states/behaviors added via new classes without modifying context   | Very High     |
+| Duplicated state checks                   | Each state centralizes its own transitions and actions                 | Medium-High   |
+| Difficult testability                     | States can be mocked or tested independently                           | High          |
+| High cyclomatic complexity                | Distributes complexity across small state classes                      | High          |
+
+---
+
+## 4. When to Use State
+
+- An object's behavior **depends on its state** and changes at runtime (e.g., finite state machines)
+- To avoid **monolithic classes** with massive conditionals for state handling
+- Systems with **many states and transitions** (e.g., workflows, protocols)
+- When states can be **hierarchical** or composed (advaned variants)
+- To make state logic **extensible** without altering the main class
+
+**Common real-world examples:**
+
+- Order processing (new, shipped, delivered, cancelled)
+- Vending machines (no coin, has coin, dispensing)
+- TCP connections (listen, established, closed)
+- Game character states (idle, running, jumping)
+
+---
+
+## 5. When Not to Use State
+
+Avoid when:
+
+- States are **few and simple** (basic if-else is sufficient and clearer)
+- No runtime state changes or **fixed behavior** (prefer [Strategy](/blog/strategy-pattern) for algorithms)
+- The system is small where extra classes add unnecessary overhead
+- States don't affect behavior significantly (use enums or flags)
+- Performance is critical and polymorphism overhead is an issue (rare)
+- Overlapping with Strategy (if no internal state transitions; use for pure algorithms)
+- You are tempted to use it just because "it's a behavioral pattern" (this leads to over-abstraction)

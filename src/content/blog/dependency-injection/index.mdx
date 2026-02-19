@@ -1,0 +1,130 @@
+---
+title: 'Dependency Injection'
+description: 'Fundamentals of Dependency Injection'
+date: 2026-02-19
+tags: ['design-pattern', 'dependency-injection', 'creational-design-pattern']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## 1. Introduction
+
+The **Dependency Injection** pattern (also known as Inversion of Control or IoC) is one of the most widely used **Creational Design Patterns**. It involves **supplying an object's dependencies from the outside** rather than creating them internally, allowing for greater flexibility, testability, and modularity. This pattern is especially powerful in large systems where components need to be decoupled, enabling easy swapping of implementations (e.g., for mocking in tests or different environments), while keeping the client code focused on behavior rather than instantiation details.
+
+It enables adherence to the **Open-Closed Principle** (open for extension, closed for modification) and the **Dependency Inversion Principle** (high-level modules should not depend on low-level ones), helping to reduce hierarchies and improve maintainability.
+
+---
+
+## 2. Code Example
+
+### Bad Approach
+
+Hardcoded Conditional Creation (Tight Coupling & Violation of OCP)
+
+```python
+class EmailSender:
+  def send(self, message: str):
+    return f"Sending email: {message}"
+
+class NotificationService:
+  def __init__(self):
+    self.sender = EmailSender()  # Hardcoded dependency
+
+  def notify(self, user: str, message: str):
+    return self.sender.send(f"Notification to {user}: {message}")
+
+# Client code - fragile and violates open-closed principle
+service = NotificationService()
+print(service.notify("Alice", "Hello!"))  # Sending email: Notification to Alice: Hello!
+```
+
+**Problems:**
+
+- Tight coupling: `NotificationService` is locked to `EmailSender`; changing to SMS requires modifying the class
+- Poor testability: Can't easily mock or swap the sender for unit tests
+- Violates dependency inversion: High-level service depends directly on low-level implementation
+
+### Good Approach
+
+Dependency Injection Pattern (Decoupled Dependencies)
+
+```python
+from abc import ABC, abstractmethod
+
+# Dependency interface
+class MessageSender(ABC):
+  @abstractmethod
+  def send(self, message: str) -> str:
+    pass
+
+# Concrete dependencies
+class EmailSender(MessageSender):
+  def send(self, message: str) -> str:
+    return f"Sending email: {message}"
+
+class SMSSender(MessageSender):
+  def send(self, message: str) -> str:
+    return f"Sending SMS: {message}"
+
+# High-level class with injected dependency
+class NotificationService:
+  def __init__(self, sender: MessageSender):
+    self.sender = sender  # Injected via constructor
+
+  def notify(self, user: str, message: str) -> str:
+    return self.sender.send(f"Notification to {user}: {message}")
+
+# Client - depends only on abstraction, injects dependency
+email_service = NotificationService(EmailSender())
+sms_service = NotificationService(SMSSender())
+
+print(email_service.notify("Alice", "Hello!"))  # Sending email: Notification to Alice: Hello!
+
+print(sms_service.notify("Bob", "Hi!"))         # Sending SMS: Notification to Bob: Hi!
+```
+
+Adding a new sender (e.g., `PushNotificationSender`) requires **only** creating a new implementation (no new changes to existing `NotificationService` or client code).
+
+---
+
+## 3. Complexities & Coupling Reduced/Solved
+
+| Problem                            | How Dependency Injection Helps                                              | Benefit Level |
+| ---------------------------------- | --------------------------------------------------------------------------- | ------------- |
+| Tight coupling between classes     | Dependencies are injected externally, allowing swaps without code changes   | High          |
+| Hardcoded implementations          | Promotes interfaces/abstracts; concrete classes can be varied at runtime    | High          |
+| Violation of Open-Closed Principle | Extensions (new implementations) don't modify existing classes              | Very High     |
+| Duplicated instantiation           | Centralizes dependency creation (e.g., via containers or factories)         | Medium-High   |
+| Difficult testability              | Easy to inject mocks/stubs for isolated unit testing                        | High          |
+| Rigid dependency hierarchies       | Inverts control, making high-level modules independent of low-level details | High          |
+
+---
+
+## 4. When to Use Dependency Injection
+
+- You want to **decouple classes** from their dependencies for flexibility (e.g., switching implementations)
+- Systems requiring **high testability** (e.g., injecting mocks in unit tests)
+- Large applications with **IoC containers** (e.g., Spring in Java, DI in Python frameworks like FastAPI)
+- When dependencies are **configurable** by environment (e.g., dev vs. prod databases)
+- To adhere to SOLID principles, especially **Dependency Inversion**
+
+**Common real-world examples:**
+
+- Web frameworks (e.g., injecting services/controllers in ASP.NET or Django)
+- Database access (e.g., injecting repositories into services)
+- Logging or caching (e.g., injecting different providers)
+- Microservices (e.g., injecting clients for external APIs)
+
+---
+
+## 5. When Not to Use Dependency Injection
+
+Avoid when:
+
+- The system is small/simple with **no need for swapping dependencies**
+- Dependencies are **tightly bound** and won't change (e.g., core utilities)
+- Overheads of interfaces/containers outweigh benefits in tiny scripts
+- In performance-critical code where injection adds unnecessary indirection
+- When it leads to **over-abstraction** (e.g., injecting everything unnecessarily)
+- Better suited for static dependencies (use [factories](/blog/factory-method-pattern) or [singletons](/blog/singleton-pattern) instead)
+- You are tempted to use it just because "it's a design principle" (this leads to over-abstraction)

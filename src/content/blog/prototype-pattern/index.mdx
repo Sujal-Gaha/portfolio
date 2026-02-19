@@ -1,0 +1,179 @@
+---
+title: 'Prototype Pattern'
+description: 'Fundamentals of Prototype Pattern'
+date: 2026-02-19
+tags: ['design-pattern', 'prototype-pattern', 'creational-design-pattern']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## 1. Introduction
+
+The **Prototype** pattern (also known as Clone) is one of the most widely used **Creational Design Patterns**. It specifies the kinds of objects to create using a **prototypical instance**, and creates new objects by copying this prototype. This pattern is especially powerful when object creation is expensive (e.g., involves database queries, heavy computations, or resource allocation), allowing you to clone existing objects instead of building them from scratch, while keeping the client code independent of concrete classes and construction details.
+
+It enables adherence to the **Open-Closed Principle** (open for extension, closed for modification) and helps avoid repetitive or costly initialization logic scattered throughout the codebase.
+
+---
+
+## 2. Code Example
+
+### Bad Approach
+
+Hardcoded Conditional Creation (Tight Coupling & Violation of OCP)
+
+```python
+class Shape:
+  def __init__(
+    self,
+    type: str,
+    color: str,
+    x: int,
+    y: int,
+    size: int,
+  ):
+    self.type = type
+    self.color = color
+    self.x = x
+    self.y = y
+    self.size = size  # Assume expensive computation or DB load here
+
+  def draw(self) -> str:
+    return f"Drawing {self.color} {self.type} at ({self.x}, {self.y}) with size {self.size}"
+
+# Client code - fragile and violates open-closed principle
+def create_shape(shape_type: str):
+  if shape_type == "circle":
+    return Shape("circle", "red", 10, 20, 5)  # Repeated expensive init
+  elif shape_type == "square":
+    return Shape("square", "blue", 30, 40, 10)
+  else:
+    raise ValueError(f"Unsupported shape: {shape_type}")
+
+# Usage - recreates from scratch each time
+circle1 = create_shape("circle")
+circle2 = create_shape("circle")  # Redundant expensive creation
+
+print(circle1.draw())  # Drawing red circle at (10, 20) with size 5
+print(circle2.draw())  # Drawing red circle at (10, 20) with size 5
+```
+
+**Problems:**
+
+- Every similar object requires full reinitialization, even if mostly identical (inefficient for expensive setups)
+- High duplication in creation logic: adding variants grows conditionals
+- Client is tightly coupled to concrete parameters and must repeat costly operations
+
+### Good Approach
+
+Prototype Pattern (Cloning for Efficient Creation)
+
+```python
+from abc import ABC, abstractmethod
+import copy
+
+# Prototype interface
+class Shape(ABC):
+  @abstractmethod
+  def clone(self):
+    pass
+
+  @abstractmethod
+  def draw(self) -> str:
+    pass
+
+# Concrete prototype
+class Circle(Shape):
+  def __init__(
+    self,
+    color: str = "red",
+    x: int = 10,
+    y: int = 20,
+    size: int = 5
+  ):
+    self.color = color
+    self.x = x
+    self.y = y
+    self.size = size  # Assume expensive init (e.g., DB load) done once
+
+  def clone(self):
+    return copy.deepcopy(self)  # Or implement manual clone for efficiency
+
+  def draw(self) -> str:
+    return f"Drawing {self.color} circle at ({self.x}, {self.y}) with size {self.size}"
+
+class Square(Shape):
+  def __init__(
+    self,
+    color: str = "blue",
+    x: int = 30,
+    y: int = 40,
+    size: int = 10
+  ):
+    self.color = color
+    self.x = x
+    self.y = y
+    self.size = size
+
+  def clone(self):
+    return copy.deepcopy(self)
+
+  def draw(self) -> str:
+    return f"Drawing {self.color} square at ({self.x}, {self.y}) with size {self.size}"
+
+# Client - depends only on abstraction
+prototype_circle = Circle()  # Expensive init done once
+prototype_square = Square()
+
+circle1 = prototype_circle.clone()
+circle2 = prototype_circle.clone()  # Efficient clone, modify if needed
+circle2.x = 50  # Customize clone
+
+print(circle1.draw())  # Drawing red circle at (10, 20) with size 5
+print(circle2.draw())  # Drawing red circle at (50, 20) with size 5
+```
+
+Adding a new shape (e.g., Triangle) or variant requires **only** creating a new prototype class with clone (no changes to existing client or creation code)
+
+---
+
+## 3. Complexities & Coupling Reduced/Solved
+
+| Problem                                       | How Prototype Helps                                                                 | Benefit Level |
+| --------------------------------------------- | ----------------------------------------------------------------------------------- | ------------- |
+| Tight coupling to concrete creation details   | Client clones prototypes without knowing internals or parameters                    | High          |
+| Expensive or repetitive object initialization | Clones reuse existing state, avoiding costly setups each time                       | High          |
+| Violation of Open-Closed Principle            | New variants added by registering new prototypes (no modification of existing code) | Very High     |
+| Duplicated configuration logic                | Centralized in prototypes; clones inherit and can be tweaked                        | Medium-High   |
+| Difficult testability                         | Easy to create mock prototypes for isolated testing                                 | High          |
+| High resource usage in creation               | Reduces overhead by copying instead of rebuilding from scratch                      | High          |
+
+---
+
+## 4. When to Use Prototype
+
+- Object creation is **expensive or complex** (e.g., involves I/O, computations, or external resources) and you need many similar instances
+- You want to **avoid subclass explosions** for slight variables (clone and modify instead)
+- Systems requiring **runtime registration** of product classes (e.g., via a prototype manage/registry)
+- When objects have **circular references** or deep structures that are hard to construct manually
+- To achieve **immutability or versioning** by cloning before changes
+
+**Common real-world examples:**
+
+- Game object spawning (e.g., cloning enemies, items, or levels with variations)
+- Document templates (e.g., cloning resumes or reports with base structure)
+- GUI elements (e.g., cloning widgets with default styles)
+- Configuration objects (e.g., cloning app settings for different environments)
+
+---
+
+## 5. When Not to Use Prototype
+
+Avoid when:
+
+- Objects are simple and cheap to create (direct constructors suffice; no cloning benefit)
+- You have **no need for copying** or variations from a base instance
+- You are writing a very small script/prototype where cloning adds unnecessary interfaces
+- Deep cloning is problematic (e.g., objects with external resources like file handles or threads)
+- Performance-critical paths where cloning overhead (e.g., deep copy) exceeds creation case
+- Overlapping with other patterns (e.g., if families are key, prefer [Abstract Factory Pattern](/blog/abstract-factory-pattern); for singletons, avoid entirely)
+- You are tempted to use it just because "it's a creational pattern" (this leads to over-abstraction)

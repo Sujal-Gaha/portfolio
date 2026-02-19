@@ -1,0 +1,120 @@
+---
+title: 'Singleton Pattern'
+description: 'Fundamentals of Singleton Pattern'
+date: 2026-02-19
+tags: ['design-pattern', 'singleton-pattern', 'creational-design-pattern']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## 1. Introduction
+
+The **Singleton** pattern is one of the most widely used **Creational Design Patterns**. It ensures a class has **only one instance** and provides a global point of access to that instance. This pattern is especially powerful when you need to control access to a shared resource (e.g., a configuration manager or database connection), preventing multiple instances from causing inconsistencies or resource waste, while keeping the client code simple and unaware of the instantiation logic.
+
+It enables adherence to the **Open-Closed Principle** (open for extension, closed for modification) and helps manage global state without scattering static variables or globals throughout the codebase.
+
+---
+
+## 2. Code Example
+
+### Bad Approach
+
+Hardcoded Conditional Creation (Tight Coupling & Violation of OCP)
+
+```python
+class Logger:
+  def __init__(self):
+    self.log_file = "app.log"  # Assume resource setup (e.g., file open)
+
+  def log(self, message: str):
+    print(f"Logging: {message}")
+
+# Client code - fragile and violates open-closed principle
+logger1 = Logger()  # New instance each time
+logger2 = Logger()  # Another instance - wastes resources, potential conflicts
+
+logger1.log("Error occurred")  # Logging: Error occurred
+logger2.log("Warning issued")  # Logging: Warning issued
+
+print(logger1 is logger2)  # False - multiple instances exist
+```
+
+**Problems:**
+
+- Allows multiple instances, leading to resource duplication or state inconsistencies (e.g., multiple log files or connections)
+- No enforcement of single instance; clients can create as many as they want
+- Client tightly coupled to direct insantiation, making global access cumbersome
+
+### Good Approach
+
+Singleton Pattern (Controlled Single Instance)
+
+```python
+class Logger:
+  _instance = None  # Private class variable for the single instance
+
+  def __new__(cls):
+    if cls._instance is None:
+      print("Creating the logger instance")  # Happens only once
+      cls._instance = super(Logger, cls).__new__(cls)
+      cls._instance.log_file = "app.log"  # Resource setup done once
+    return cls._instance
+
+  def log(self, message: str):
+    print(f"Logging: {message}")
+
+# Client - depends only on the class (global access)
+logger1 = Logger()
+logger2 = Logger()  # Returns the same instance
+
+logger1.log("Error occurred")  # Logging: Error occurred
+logger2.log("Warning issued")  # Logging: Warning issued
+
+print(logger1 is logger2)  # True - single instance enforced
+```
+
+Adding thread-safety (e.g., with locks) or lazy initialization requires **only** enhancing the `__new__` method (no changes to existing client code).
+
+---
+
+## 3. Complexities & Coupling Reduced/Solved
+
+| Problem                              | How Singleton Helps                                                                     | Benefit Level |
+| ------------------------------------ | --------------------------------------------------------------------------------------- | ------------- |
+| Tight coupling to multiple instances | Clients access a single global point without creating new objects                       | High          |
+| Resource waste from duplicates       | Enforces one instance, optimizing for shared resources like connections                 | High          |
+| Violation of Open-Closed principle   | Extensions (e.g., subclasses) can inherit the singleton behavior without client changes | Very High     |
+| Duplicated global state management   | Centralizes state in one instance, avoiding scattered globals                           | Medium-High   |
+| Difficult testability                | Can be mocked or reset for tests (with careful design)                                  | High          |
+| Inconsistent shared access           | Provides controlled, thread-safe (if implemented) global entry point                    | High          |
+
+---
+
+## 4. When to Use Singleton
+
+- You need **exactly one instance** of a class across the application (e.g., to manage shared resources)
+- Global access is required without passing instances around (e.g., configuration or caching)
+- Lazy initialization is beneficial (create only when first needed)
+- Systems with **expensive instantiation** that should happen once (e.g., DB pools, hardware interfaces)
+- To replace global variables with a more structured, controllable approach
+
+**Common real-world examples:**
+
+- Logging systems (single logger for consistent output)
+- Configuration managers (app-wide settings loaded once)
+- Database connection pools (single manager for connections)
+- Caching mechanisms (unified cache instance)
+
+---
+
+## When Not to Use Singleton
+
+Avoid when:
+
+- Multiple instances are needed or beneficial (e.g., per-thread or per-user object)
+- The class has **no global state** or shared resources (use regular objects)
+- You are writing unit tests where singletons hinder isolation (can make mocking hard)
+- In highly concurrent systems without proper thread-safety (risk of race conditions)
+- Overusing for "convenience" globals (leads to hidden dependencies and spaghetti code)
+- Better alternatives exist (e.g., [Dependency Injection](/blog/dependency-injection) for managed single instances)
+- You are tempted to use it just because "it's a creational pattern" (this leads to over-abstraction)
