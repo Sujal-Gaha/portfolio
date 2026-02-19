@@ -1,0 +1,139 @@
+---
+title: 'Strategy Pattern'
+description: 'Fundamentals of Strategy Pattern'
+date: 2026-02-19
+tags: ['design-pattern', 'strategy-pattern', 'behavioral-design-pattern']
+image: './2026.png'
+authors: ['sujal']
+---
+
+## 1. Introduction
+
+The **Strategy** pattern (also known as Policy) is one of the most widely used **Behavioral Design Patterns**. It defines a **family of algorithms**, encapsulates each one, and makes them interchangeable at runtime. This pattern is especially powerful when you need to switch behaviors dynamically without altering the client code, allowing for flexible and extensible systems where algorithms can vary independently from the classes that use them.
+
+It enables adherence to the **Open-Closed Principle** (open for extension, closed for modification) and helps eliminate large conditional statements by replacing them with polymorphic behavior.
+
+---
+
+## 2. Code Example
+
+### Bad Approach
+
+Hardcoded Conditional Creation (Tight Coupling & Violation of OCP)
+
+```python
+class PaymentProcessor:
+  def __init__(self, payment_type: str):
+    self.payment_type = payment_type
+
+  def process_payment(self, amount: float) -> str:
+    if self.payment_type == "credit_card":
+      return f"Processing credit card payment of ${amount}"
+    elif self.payment_type == "paypal":
+      return f"Processing Paypal payment of ${amount}"
+    elif self.payment_type == "bitcoin":
+      return f"Processing Bitcoin payment of ${amount}"
+    else:
+      raise ValueError(f"Unsupported payment type: {self.payment_type}")
+
+# Client code - fragile and violates open-closed principle
+processor = PaymentProcessor("credit_card")
+print(processor.process_payment(100.0))  # Processing credit card payment of $100.0
+```
+
+**Problems**:
+
+- Every new payment method requires modifying the process_payment method
+- High cyclomatic complexity from growing if-elif chains
+- Client is indirectly coupled to all possible behaviors via the type string
+
+### Good Approach
+
+Strategy Pattern (Interchangeable Algorithms)
+
+```python
+from abc import ABC, abstractmethod
+
+# Strategy interface
+class PaymentStrategy(ABC):
+  @abstractmethod
+  def process(self, amount: float) -> str:
+    pass
+
+# Concrete strategies
+class CreditCardStrategy(PaymentStrategy):
+  def process(self, amount: float) -> str:
+    return f"Processing credit card payment of ${amount}"
+
+class PaypalStrategy(PaymentStrategy):
+  def process(self, amount: float) -> str:
+    return f"Processing PayPal payment of ${amount}"
+
+class BitcoinStrategy(PaymentStrategy):
+  def process(self, amount: float) -> str:
+    return f"Processing Bitcoin payment of ${amount}"
+
+# Context - uses the strategy
+class PaymentProcessor:
+  def __init__(self, strategy: PaymentStrategy):
+    self.strategy = strategy
+
+  def set_strategy(self, strategy: PaymentStrategy):
+    self.strategy = strategy  # Runtime switch
+
+  def process_payment(self, amount: float) -> str:
+    return self.strategy.process(amount)
+
+# Client - depends only on abstraction
+processor = PaymentProcessor(CreditCardStrategy())
+print(processor.process_payment(100.0))  # Processing credit card payment of $100.0
+
+processor.set_strategy(PayPalStrategy())
+print(processor.process_payment(200.0))  # Processing PayPal payment of $200.0
+```
+
+Adding a new strategy (e.g., `ApplePayStrategy`) requires **only** creating a new class implementing the interface (no changes to existing `PaymentProcessor` or client code).
+
+---
+
+## 3. Complexities & Coupling Reduced/Solved
+
+| Problem                              | How Strategy Helps                                                    | Benefit Level |
+| ------------------------------------ | --------------------------------------------------------------------- | ------------- |
+| Tight coupling to specific behaviors | Behaviors encapsulated in swappable strategies; client uses interface | High          |
+| Large conditional blocks (if-elif)   | Replaced by polymorphic calls to strategies                           | High          |
+| Violation of Open-Closed Principle   | New algorithms added via new strategies without modifying context     | Very High     |
+| Duplicatted algorithm logic          | Each strategy centralizes on variant, reusable across contexts        | Medium-High   |
+| Difficult testability                | Strategies can be mocked or tested in isolation                       | High          |
+| High cyclomatic complexity           | Eliminates branching in context class                                 | High          |
+
+---
+
+## 4. When to Use Strategy
+
+- You have **multiple algorithms** for a task that should be selectable at runtime
+- Behaviors need to **vary independently** from the class using them (e.g., sorting, compression)
+- To avoid subclass explosion for every behavior combination (use composition over inheritance)
+- Systems requiring **dynamic switching** (e.g., user-selected options)
+- When conditional logic becomes too complex and should be extracted
+
+**Common real-world examples:**
+
+- Sorting algorithms (e.g., QuickSort, MergeSort in collections)
+- Payment processing (e.g., credit card, PayPal, crypto)
+- Navigation routes (e.g., car, bike, walk in maps apps)
+- Compression strategies (e.g., ZIP, GZIP in file handlers)
+
+---
+
+## 5. When Not to Use Strategy
+
+Avoid when:
+
+- There is only **one fixed behavior** with no variation needed
+- You have a **small, unchanging** set of options (simple if-else suffices)
+- Runtime switching isn't required (prefer static methods or enums)
+- Over-abstraction would complicate a simple system (e.g., tiny scripts)
+- Performance is critical and polymorphism overhead matters (rare)
+- The pattern overlaps with [State](/blog/state-pattern) (if behavior changes with internal state)
+- You are tempted to use it just because "it's a behavioral pattern" (this leads to over-abstraction)
