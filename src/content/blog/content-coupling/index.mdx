@@ -37,7 +37,7 @@ To detect content coupling in your codebase, look for:
 
 Consider this example in Python:
 
-```py
+```python
 class UnsafeDatabase:
     def __init__(self):
         self._data = "Sensitive Data"
@@ -64,7 +64,7 @@ The best way to resolve content coupling is to enforce **proper encapsulation**.
 
 **Solution**:
 
-```py
+```python
 class SecureDatabase:
     def __init__(self):
         self._data = "Secure Data"
