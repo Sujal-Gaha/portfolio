@@ -1,11 +1,11 @@
 ---
-import { type CollectionEntry, getCollection } from 'astro:content'
-import Layout from '@/layouts/Layout.astro'
-import Container from '@/components/Container.astro'
 import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import Container from '@/components/Container.astro'
+import Layout from '@/layouts/Layout.astro'
 import { formatDate } from '@/lib/utils'
 import { Icon } from 'astro-icon/components'
 import { Image } from 'astro:assets'
+import { type CollectionEntry, getCollection } from 'astro:content'
 
 export async function getStaticPaths() {
   const experiments = await getCollection('experiments')
@@ -29,7 +29,11 @@ const { Content, headings } = await experiment.render()
   <Container class="flex flex-col gap-y-6">
     <Breadcrumbs
       items={[
-        { href: '/experiments', label: 'Experiments', icon: 'lucide:flask-conical' },
+        {
+          href: '/experiments',
+          label: 'Experiments',
+          icon: 'lucide:flask-conical',
+        },
         { label: experiment.data.title, icon: 'lucide:binary' },
       ]}
     />
@@ -37,13 +41,13 @@ const { Content, headings } = await experiment.render()
     {
       experiment.data.image && (
         <div class="overflow-hidden rounded-xl border">
-            <Image
-                src={experiment.data.image}
-                alt={experiment.data.title}
-                width={1200}
-                height={630}
-                class="object-cover w-full h-auto"
-            />
+          <Image
+            src={experiment.data.image}
+            alt={experiment.data.title}
+            width={1200}
+            height={630}
+            class="h-auto w-full object-cover"
+          />
         </div>
       )
     }
@@ -53,21 +57,25 @@ const { Content, headings } = await experiment.render()
         <h1 class="text-4xl font-bold leading-tight sm:text-5xl">
           {experiment.data.title}
         </h1>
-        
-        <div class="flex items-center justify-center gap-x-2 text-sm text-muted-foreground">
+
+        <div
+          class="flex items-center justify-center gap-x-2 text-sm text-muted-foreground"
+        >
           <span>{formatDate(experiment.data.date)}</span>
-          {experiment.data.category && (
-            <>
+          {
+            experiment.data.category && (
+              <>
                 <span class="mx-1 select-none opacity-50">/</span>
-                <span class="font-mono text-primary uppercase text-xs">
-                    {experiment.data.category}
+                <span class="font-mono text-xs uppercase text-primary">
+                  {experiment.data.category}
                 </span>
-            </>
-          )}
+              </>
+            )
+          }
         </div>
       </div>
-      
-      <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+
+      <p class="mx-auto max-w-2xl text-lg text-muted-foreground">
         {experiment.data.description}
       </p>
     </section>
@@ -79,14 +87,13 @@ const { Content, headings } = await experiment.render()
     </article>
 
     <div class="py-10">
-        <a 
-            href="/experiments" 
-            class="inline-flex items-center gap-x-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
-        >
-            <Icon name="lucide:arrow-left" class="size-4" />
-            Back to The Lab
-        </a>
+      <a
+        href="/experiments"
+        class="inline-flex items-center gap-x-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+      >
+        <Icon name="lucide:arrow-left" class="size-4" />
+        Back to The Lab
+      </a>
     </div>
-
   </Container>
 </Layout>

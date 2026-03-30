@@ -1,7 +1,7 @@
 ---
-import { type CollectionEntry } from 'astro:content'
-import { Image } from 'astro:assets'
 import { Icon } from 'astro-icon/components'
+import { Image } from 'astro:assets'
+import { type CollectionEntry } from 'astro:content'
 
 type Props = {
   experiment: CollectionEntry<'experiments'>
@@ -26,7 +26,7 @@ const { title, description, date, category, image } = experiment.data
           class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
         {category && (
-          <div class="absolute right-2 top-2 rounded-md bg-background/80 px-2 py-1 text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm border">
+          <div class="absolute right-2 top-2 rounded-md border bg-background/80 px-2 py-1 text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm">
             {category}
           </div>
         )}
@@ -36,21 +36,28 @@ const { title, description, date, category, image } = experiment.data
 
   <div class="flex flex-grow flex-col p-4">
     <div class="mb-2 flex items-center justify-between">
-      <span class="text-xs text-muted-foreground font-mono">
+      <span class="font-mono text-xs text-muted-foreground">
         <!-- {formatDate(date)} -->
       </span>
-      <Icon name="lucide:flask-conical" class="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
+      <Icon
+        name="lucide:flask-conical"
+        class="size-4 text-muted-foreground transition-colors group-hover:text-primary"
+      />
     </div>
-    
-    <h3 class="mb-2 text-lg font-bold leading-tight group-hover:text-primary transition-colors">
+
+    <h3
+      class="mb-2 text-lg font-bold leading-tight transition-colors group-hover:text-primary"
+    >
       {title}
     </h3>
-    
+
     <p class="line-clamp-2 text-sm text-muted-foreground">
       {description}
     </p>
-    
-    <div class="mt-4 flex items-center text-xs font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
+
+    <div
+      class="mt-4 flex items-center text-xs font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100"
+    >
       View Experiment <Icon name="lucide:arrow-right" class="ml-1 size-3" />
     </div>
   </div>
