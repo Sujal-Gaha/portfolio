@@ -1,0 +1,92 @@
+---
+import { type CollectionEntry, getCollection } from 'astro:content'
+import Layout from '@/layouts/Layout.astro'
+import Container from '@/components/Container.astro'
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import { formatDate } from '@/lib/utils'
+import { Icon } from 'astro-icon/components'
+import { Image } from 'astro:assets'
+
+export async function getStaticPaths() {
+  const experiments = await getCollection('experiments')
+  return experiments.map((experiment) => ({
+    params: { slug: experiment.slug },
+    props: experiment,
+  }))
+}
+
+type Props = CollectionEntry<'experiments'>
+
+const experiment = Astro.props
+const { Content, headings } = await experiment.render()
+---
+
+<Layout
+  title={experiment.data.title}
+  description={experiment.data.description}
+  image={experiment.data.image?.src ?? '/static/1200x630.png'}
+>
+  <Container class="flex flex-col gap-y-6">
+    <Breadcrumbs
+      items={[
+        { href: '/experiments', label: 'Experiments', icon: 'lucide:flask-conical' },
+        { label: experiment.data.title, icon: 'lucide:binary' },
+      ]}
+    />
+
+    {
+      experiment.data.image && (
+        <div class="overflow-hidden rounded-xl border">
+            <Image
+                src={experiment.data.image}
+                alt={experiment.data.title}
+                width={1200}
+                height={630}
+                class="object-cover w-full h-auto"
+            />
+        </div>
+      )
+    }
+
+    <section class="flex flex-col gap-y-4 text-center">
+      <div class="flex flex-col gap-y-2">
+        <h1 class="text-4xl font-bold leading-tight sm:text-5xl">
+          {experiment.data.title}
+        </h1>
+        
+        <div class="flex items-center justify-center gap-x-2 text-sm text-muted-foreground">
+          <span>{formatDate(experiment.data.date)}</span>
+          {experiment.data.category && (
+            <>
+                <span class="mx-1 select-none opacity-50">/</span>
+                <span class="font-mono text-primary uppercase text-xs">
+                    {experiment.data.category}
+                </span>
+            </>
+          )}
+        </div>
+      </div>
+      
+      <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+        {experiment.data.description}
+      </p>
+    </section>
+
+    <hr class="border-t" />
+
+    <article class="prose prose-neutral max-w-none dark:prose-invert">
+      <Content />
+    </article>
+
+    <div class="py-10">
+        <a 
+            href="/experiments" 
+            class="inline-flex items-center gap-x-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+        >
+            <Icon name="lucide:arrow-left" class="size-4" />
+            Back to The Lab
+        </a>
+    </div>
+
+  </Container>
+</Layout>

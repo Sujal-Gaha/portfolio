@@ -60,4 +60,17 @@ const projects = defineCollection({
     }),
 })
 
-export const collections = { blog, authors, projects }
+const experiments = defineCollection({
+  type: 'content',
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      description: z.string(),
+      date: z.coerce.date(),
+      tags: z.array(z.string()).optional(),
+      image: image().optional(),
+      category: z.enum(['3d', 'webgl', 'css', 'shader']).optional(),
+    }),
+})
+
+export const collections = { blog, authors, projects, experiments }
