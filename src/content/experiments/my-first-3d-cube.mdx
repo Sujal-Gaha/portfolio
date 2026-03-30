@@ -1,0 +1,22 @@
+---
+title: "Playing with Three.js in Astro"
+description: "My first experiment integrating React Three Fiber into a static site."
+date: 2026-03-30
+category: "3d"
+---
+
+import InteractiveCube from "../../components/experiments/InteractiveCube.tsx";
+
+# Hello 3D World
+
+I wanted to see if I could get a 3D canvas running inside my portfolio without destroying my SEO or lighthouse score.
+
+### The Result:
+
+Click the cube to change its size, or hover to change the color!
+
+<InteractiveCube client:visible />
+
+### How it works
+
+I used `client:visible` so the Three.js library only loads when you scroll down to this section. This keeps the initial page load super fast.
