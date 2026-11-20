@@ -32,7 +32,7 @@ npm init -y
 
 ### 2. **Install Root-Level Dev Dependencies**
 
-We’ll add `concurrently` to run both frontend and backend servers in parallel, and `typescript` to manage shared TypeScript configurations.
+We'll add `concurrently` to run both frontend and backend servers in parallel, and `typescript` to manage shared TypeScript configurations.
 
 ```bash
 npm install -D concurrently typescript
@@ -273,6 +273,6 @@ npm run dev              # Runs both concurrently
 
 ---
 
-## Conclusion
+## Next Steps
 
-This setup organizes the backend into models, controllers, and routes and connects it seamlessly with a React frontend. Now you have a robust, maintainable, full-stack TypeScript application!
+With both servers configured and running via root scripts, the next logical steps are sharing TypeScript type definitions between the frontend and backend, or adding seed scripts in Prisma for local development.

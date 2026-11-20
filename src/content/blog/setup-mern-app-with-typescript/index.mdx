@@ -20,7 +20,7 @@ image: './2024.png'
 authors: ['sujal']
 ---
 
-This blog will guide you on how to setup your own mern app with typescript supported for better development experience. It also shows how to properly structure your backend folder for convention.
+Setting up a full TypeScript environment across both the Express backend and React frontend takes a bit of initial wiring. Here is a clean setup for a MERN application with TypeScript support and a standard project structure.
 
 ## 1. Create the Main Project Directory:
 
@@ -114,7 +114,7 @@ app.get('/', (req, res) => {
 const connectDB = async () => {
   try {
     if (!MONGO_URI) {
-      throw new Error('The .env file doesnot have the mongo uri')
+      throw new Error('Missing MONGO_URI in .env file')
     }
     console.log('Connecting...')
     await mongoose.connect(MONGO_URI)

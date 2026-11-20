@@ -15,11 +15,11 @@ image: './2025.png'
 authors: ['sujal']
 ---
 
-In this blog, you'll learn how to set up a React app using Vite with Shadcn and TanStack Table for creating a reusable table component. Let's get started!
+Building data tables from scratch gets tedious once you need sorting, pagination, and customized cells. Pairing Shadcn UI components with TanStack Table gives you accessible, headless table logic wrapped in clean Tailwind styling. Here is how to assemble a reusable table component in a React and Vite app.
 
-## 1. Create the React App with Vite:
+## 1. Create the React Project
 
-Replace the **[project-name]** with your actual project name.
+Replace `[project-name]` with your project folder name:
 
 ```bash
 npm create vite@latest [project-name] -- --template react-ts --swc
@@ -131,7 +131,7 @@ export default defineConfig({
 npx shadcn@latest init
 ```
 
-#### 2.1.7. Install Table, Pagination and Buttom component from Shadcn:
+#### 2.1.7. Add Button, Table, and Pagination components:
 
 ```bash
 npx shadcn@latest add button table pagination
