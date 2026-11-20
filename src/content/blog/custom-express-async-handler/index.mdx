@@ -1,99 +1,74 @@
 ---
 title: 'Custom Express Async Handler'
-description: 'This blog will teach you how to make your own custom async handler and say Goodbye! to try-catch statements.'
+description: 'Build a lightweight custom async handler in TypeScript to eliminate repetitive try-catch blocks in Express.'
 date: 2024-10-01
 tags: ['backend', 'typescript', 'express', 'asynchronous']
 image: './2024.png'
 authors: ['sujal']
 ---
 
-Working with try catch every time can be tedious and repetitive. We can use `npm` packages like `express-async-handler` but why bother installing third party packages when we can make our own custom express async handler.
+Writing `try-catch` blocks inside every route handler gets repetitive fast. While packages like `express-async-handler` exist, you do not need an external dependency for something that takes five lines of TypeScript.
 
-## 1. Example
+## 1. The Async Handler
 
-### 1.1. Custom express async handler (with Typescript)
-
-Create a `async-handler.ts` file and paste the code below.
+Create an `async-handler.ts` file:
 
 ```typescript
-import { Request, Response } from 'express'
+import { Request, Response, NextFunction } from 'express'
 
-interface ErrorSchema {
-  // define your error schema here
-}
-
-const handleError = (res: Response, error: ErrorSchema) => {
-  // handle your error here
-}
+type AsyncRequestHandler = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => Promise<any>
 
 export const asyncHandler =
-  (fn: Function) => (req: Request, res: Response, next: Function) => {
-    Promise.resolve(fn(req, res, next)).catch((error) =>
-      handleError(res, error),
-    )
+  (fn: AsyncRequestHandler) =>
+  (req: Request, res: Response, next: NextFunction) => {
+    Promise.resolve(fn(req, res, next)).catch(next)
   }
 ```
 
-## 2. Explanation
+## 2. How It Works
 
-### Higher-order function:
+- **Higher-order function:** `asyncHandler` takes an async route function `fn` and returns a standard Express middleware function `(req, res, next)`.
+- **Catching rejections:** Wrapping `fn(req, res, next)` in `Promise.resolve()` ensures that even if a synchronous error is thrown, it is treated as a promise rejection.
+- **Forwarding to Express:** Any rejected promise is passed straight into `next(error)`, handing it off to your centralized Express error-handling middleware.
 
-- The `asyncHandler` is a function that takes another function `fn` as an argument and returns a new function.
-- This new function will act as **middleware** in an Express route handler, expecting `req`, `res`, and next as parameters, which are typical for Express handlers.
+## 3. Comparison
 
-### `fn` argument:
-
-- `fn` is a function that represents an **asynchronous** operation (like a route handler).
-- It's expected to return a Promise. This could be anything like interacting with a database, making HTTP requests, or any asynchronous task within an Express route.
-
-### Executing the `fn` function:
-
-- Inside the returned function, `Promise.resolve(fn(req, res, next))` ensures that whatever `fn` returns is converted into a resolved or rejected promise.
-- Even if `fn` is not explicitly returning a promise (e.g., a synchronous function), this ensures a consistent promise-based behavior.
-
-### Error handling:
-
-- If `fn` throws an error or its returned promise rejects, `.catch()` will capture it.
-- The catch block then invokes `handleError(res, error)`, passing the error to a centralized error-handling function `handleError` (presumably defined elsewhere in the application). This prevents the need for writing repetitive try-catch blocks in each route handler.
-
-## 3. Use case example
-
-### 3.1. Example of a basic try catch statement
+### Before: Repetitive try-catch in every controller
 
 ```typescript
-const getAllProducts = async (req: Request, res: Response) => {
+const getAllProducts = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const product = await ProductModel.find({}).limit(20)
+    const products = await ProductModel.find({}).limit(20)
 
-    const productResponse: TGetAllProducts = {
+    res.status(200).json({
       status: 200,
-      data: product,
+      data: products,
       success: true,
-      message: 'Fetched all the products successfully',
-    }
-
-    res.status(200).json(productResponse)
+      message: 'Fetched products successfully',
+    })
   } catch (error) {
-    handleError(res, error)
+    next(error)
   }
 }
 ```
 
-### 3.2. Same example as above but without try catch statement
+### After: Clean controller with asyncHandler
 
 ```typescript
 const getAllProducts = asyncHandler(async (req: Request, res: Response) => {
-  const product = await ProductModel.find({}).limit(20)
+  const products = await ProductModel.find({}).limit(20)
 
-  const productResponse: TGetAllProducts = {
+  res.status(200).json({
     status: 200,
-    data: product,
+    data: products,
     success: true,
-    message: 'Fetched all the products successfully',
-  }
-
-  res.status(200).json(productResponse)
+    message: 'Fetched products successfully',
+  })
 })
 ```
 
-Above is a basic example, but working with multiple controller functions can cause you to repeat the same try catch statement for all the controllers which can be repetitive and tedious. Defining a custom async handler function helps tackle such problem and it also preserves the DRY principle of software development.
+Wrapping handlers with `asyncHandler` keeps controllers focused on the request logic, keeps error routing consistent, and adheres to DRY without pulling in extra dependencies.

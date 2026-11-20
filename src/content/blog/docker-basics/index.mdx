@@ -1,477 +1,244 @@
 ---
 title: 'Docker Basics'
-description: 'Basics of Docker'
+description: 'A practical guide to core Docker concepts, commands, and workflows for developers.'
 date: 2026-01-26
 tags: ['docker', 'backend']
 image: './2026.png'
 authors: ['sujal']
 ---
 
-## Docker Basics: Overview
+Docker packages applications and their dependencies into portable, isolated containers. Unlike traditional virtual machines that require a complete guest operating system, containers share the host Linux kernel. This makes them fast to boot, light on resource usage, and predictable between local development and production servers.
 
-Docker is an open-source platform for developing, shipping, and running applications inside containers. Containers are lightweight, portable, and isolated environments that package code and dependencies together, ensuring consistency across development, testing, and production. Unlike virtual machines, containers share the host OS kernel, making them efficient. Docker simplifies app development by solving "it works on my machine" issues.
+To follow along, make sure Docker is installed on your machine ([docker.com](https://www.docker.com/)) and confirm it runs in your terminal:
 
-The key Docker concepts are explained in simple terms, covering what it is, key sub-concepts, basic CLI (Command Line Interface) commands, and real-world examples. To get started:
-
-- Install Docker from the official website [docker](https://www.docker.com/) for your OS (e.g., Docker Desktop for Windows/Mac).
-- Verify installation: `docker --version`
-- Docker runs on Linux natively and on Windows/Mac, it uses a VM.
-- Commands are run in your terminal (e.g., bash, PowerShell).
-- Assume you have Docker installed and running. Always check Docker docs for the latest details, as versions evolve (e.g., current version for me is 29.1.4).
+```bash
+docker --version
+```
 
 ---
 
-### 1. Docker Images
+## 1. Docker Images
 
-#### What it is
+An image is an immutable, read-only blueprint used to instantiate containers. It packages your code, runtime, system tools, and libraries.
 
-Images are **read-only templates** used to create containers. They include the app code, runtime, libraries, and configurations. They are like a **blueprint** for your app.
+- **Base Images:** Most images build on top of an official distribution or runtime, such as `alpine`, `ubuntu`, or `node:20-alpine`.
+- **Layers:** Each instruction in a build creates an immutable layer. Unchanged layers are cached, which speeds up subsequent builds.
+- **Tags:** Versions appended to image names, such as `nginx:alpine` or `node:20.10-slim`. Omission defaults to `:latest`.
+- **Registries:** Central storage for images, including Docker Hub and private registries like AWS ECR or GitHub Container Registry (GHCR).
 
-#### Key Concepts
-
-- **Base Image**: Starts from an official image (e.g., ubuntu, node).
-- **Layers**: Images are built in immutable layers for efficiency (caching during builds).
-- **Tags**: Versions like `nginx:latest` or `nginx:1.29.4`.
-- **Registry**: Where images are stored (e.g., Docker Hub, private registries).
-- **Pull/Push**: Download/upload images from registries.
-- **Size Optimization**: Use multi-stage builds to reduce final image size.
-
-#### Basic CLI Commands
-
-1. Search for an image
+### Essential Image Commands
 
 ```bash
+# Search for an image on Docker Hub
 docker search nginx
-```
 
-2. Pull an image
+# Download an image locally
+docker pull nginx:alpine
 
-```bash
-docker pull nginx:latest
-```
-
-3. List local images
-
-```bash
-docker images
-# or
+# List locally downloaded images
 docker image ls
+
+# Build an image from a Dockerfile in the current directory
+docker build -t my-app:1.0.0 .
+
+# Tag an existing image for a remote repository
+docker tag my-app:1.0.0 myusername/my-app:1.0.0
+
+# Push an image to a registry
+docker push myusername/my-app:1.0.0
+
+# Delete a local image
+docker image rm my-app:1.0.0
 ```
-
-4. Build an image from Dockerfile
-
-```bash
-docker build -t my-image:tag .  # from current directory
-```
-
-5. Tag an image
-
-```bash
-docker tag my-image:tag username/my-repo:tag
-```
-
-6. Push to registry
-
-```bash
-docker push username/my-repo:tag
-```
-
-7. Remove an image
-
-```bash
-docker rmi my-image:tag
-# or
-docker image rm my-image:tag
-```
-
-- **Examples**
-
-  - **Web Server Setup**: Pull `nginx:latest` to quickly spin up a web server for testing static sites.
-  - **Custom App Packaging**: Build an image for a Node.js app, including dependencies, to deploy consistently on any server.
-  - **Version Control**: Tag images with Git commit hashes (e.g., `my-app:abc123`) for rollback in production.
 
 ---
 
-### 2. Docker Containers
+## 2. Docker Containers
 
-#### What it is
+A container is a live, running instance of an image. It runs as an isolated process on the host system with its own filesystem, network stack, and process tree.
 
-Containers are **runnable instances of images**. They are isolated processes that can start, stop, and be managed independently.
-
-#### Key Concepts
-
-- **Lifecycle**: Create, start, stop, restart, remove.
-- **Ports**: Map host ports to container ports (e.g., expose app on localhost:8080).
-- **Environment Variables**: Pass configs like API keys via `-e`.
-- **Detached Mode**: Run in background with `-d`.
-- **Interactive Mode**: Access shell with `-it`.
-- **Resource Limits**: Set CPU/memory with `--cpus` or `--memory`.
-
-#### Basic CLI Commands
-
-1. Run a container
+### Running and Managing Containers
 
 ```bash
-docker run -d -p 80:80 --name my-container nginx:latest
-```
+# Run a container in detached mode (-d) and map host port 8080 to container port 80
+docker run -d -p 8080:80 --name web-server nginx:alpine
 
-2. List running containers
-
-```bash
+# View actively running containers
 docker ps
-# or
-docker container ls
-```
 
-3. List all container (including stopped)
-
-```bash
+# View all containers, including stopped ones
 docker ps -a
+
+# Stop and restart a running container
+docker stop web-server
+docker start web-server
+
+# View container output logs (-f follows live stream)
+docker logs -f web-server
+
+# Open an interactive shell inside a running container
+docker exec -it web-server sh
+
+# Remove a stopped container
+docker rm web-server
 ```
-
-4. Stop a container
-
-```bash
-docker stop my-container
-```
-
-5. Start a stopped container
-
-```bash
-docker start my-container
-```
-
-6. Remove a container
-
-```bash
-docker rm my-container  # must be stopped
-```
-
-7. Exec into a running container
-
-```bash
-docker exec -it my-container /bin/sh
-# or
-docker exec -it my-container bash
-```
-
-8. Logs
-
-```bash
-docker logs my-container
-```
-
-- **Examples**
-
-  - **Database Testing**: Run `docker run -d -p 5432:5432 --name db postgres` to test a PostgreSQL instance locally without installing it.
-  - **Microservices**: Run multiple containers (e.g., one for API, one for DB) and link them for a full-stack app.
-  - **Debugging**: Exec into a container to inspect files or run commands during troubleshooting.
 
 ---
 
-### 3. Dockerfile
+## 3. The Dockerfile
 
-#### What it is
+A Dockerfile contains step-by-step instructions for building a custom container image.
 
-A Dockerfile is a text file with instructions to build a Docker image automatically.
+### Typical Node.js Dockerfile Example
 
-#### Key Concepts
+```dockerfile
+# Use an explicit LTS runtime rather than generic latest
+FROM node:20-alpine
 
-- **Instructions**: Commands like `FROM` (base image), `RUN` (execute commands), COPY (add files), `CMD` (default command), `ENTRYPOINT` (fixed command).
-- **Build Context**: The directory where Dockerfile lives; files are copied from here.
-- **Multi-Stage Builds**: Use multiple `FROM` statements to build and then slim down the image.
-- **Best Practices**: Minimize layers, use `.dockerignore` to exclude files, cache wisely.
-- **Arguments**: Use ARG for build-time variables.
+# Set working directory inside the container
+WORKDIR /app
 
-#### Basic CLI Commands
+# Copy dependency definitions first to leverage layer caching
+COPY package*.json ./
+RUN npm ci --only=production
 
-1. Build from Dockerfile
+# Copy application source code
+COPY . .
 
-```bash
-docker build -t my-image:tag -f Dockerfile .
+# Expose port documentation
+EXPOSE 3000
+
+# Start command
+CMD ["node", "src/index.js"]
 ```
 
-2. Build with args
+### Build Tips
 
-```bash
-docker build --build-arg MY_VAR=value -t my-image:tag .
-```
-
-- **Examples**
-
-  - **Simple Node App**: Dockerfile for a backend service.
-
-  ```Dockerfile
-  FROM node:alpine  # image
-
-  COPY . /app  # copying the whole content to /app directory
-
-  RUN npm install  # install dependencies
-
-  CMD ["node", "app.js"]
-  ```
-
-  - **Multi-Stage for Go App**: First stage compiles binary, second copies it to a minimal runtime image to reduce size.
-
-  - **CI Integration**: In a pipeline, build and push images on code commit for automated deployments.
+- Always add a `.dockerignore` file containing `node_modules`, `.git`, and environment files so you do not copy local bloat into the image.
+- Order steps from least frequently changed (installing OS packages, downloading dependencies) to most frequently changed (copying app source) so Docker reuses cached layers.
+- For compiled languages like Go or Rust, use multi-stage builds to compile in a heavy builder stage and copy only the final binary into a minimal scratch or alpine image.
 
 ---
 
-### 4. Docker Volumes
+## 4. Volumes and Persistent Storage
 
-#### What it is
+By default, the filesystem inside a container is ephemeral: when the container is removed, any data written to its local filesystem is lost. Volumes solve this by mounting directories from the host.
 
-Volumes provide persistent storage for containers, allowing data to survive container restarts or deletions.
-
-#### Key Concepts
-
-- **Types**: Named volumes (managed by Docker), bind mounts (host directories), tmpfs (in-memory).
-- **Persistence**: Data in volumes isn't deleted when containers stop.
-- **Mounting**: Attach to containers with `-v` or `--mount`.
-- **Sharing**: Multiple containers can share a volume.
-- **Backups**: Use `docker cp` or tools like `docker volume export`.
-
-#### Basic CLI Commands
-
-1. Create a volume
+- **Named Volumes:** Docker manages storage inside `/var/lib/docker/volumes/`. Best for databases and state that needs to survive container recreation.
+- **Bind Mounts:** Maps an explicit host path (like your local source folder) into the container. Common in development for live reloading.
 
 ```bash
-docker volume create my-volume
-```
+# Create a managed volume
+docker volume create postgres_data
 
-2. List volumes
+# Run Postgres using the managed volume for its database storage
+docker run -d \
+  -p 5432:5432 \
+  --name local-db \
+  -e POSTGRES_PASSWORD=secret \
+  -v postgres_data:/var/lib/postgresql/data \
+  postgres:16-alpine
 
-```bash
+# Mount your current project folder for local development
+docker run -d -p 3000:3000 -v $(pwd):/app --name dev-app node:20-alpine
+
+# List and clean up unused volumes
 docker volume ls
-```
-
-3. Inspect a volume
-
-```bash
-docker volume inspect my-volume
-```
-
-4. Run with volume
-
-```bash
-docker run -d -v my-volume
-```
-
-5. Bind mount host dir
-
-```bash
-docker run -d -v /host/path:/container/path --name my-container my-image
-```
-
-6. Remove a volume
-
-```bash
-docker volume rm my-volume  # not in use
-```
-
-7. Prune unused
-
-```bash
 docker volume prune
 ```
 
-- **Examples**
-
-  - **Database Persistence**: Mount a volume for `/var/lib/postgresql/data` in a Postgres container to keep data after restarts.
-  - **Log Storage**: Bind mount host logs to a container for easy access and analysis.
-  - **Shared Configs**: Multiple app containers share a config volume for consistent settings.
-
 ---
 
-### 5. Docker Networks
+## 5. Container Networking
 
-#### What it is
-
-Networks allow containers to communicate securely and isolate traffic.
-
-#### Key Concepts
-
-- **Drivers**: Bridge (default for single host), host (use host networking), overlay (multi-host).
-- **Default Network**: All containers join 'bridge' unless specified.
-- **Container Linking**: Use network names or aliases for service discovery.
-- **Ports Exposure**: Networks control which ports are accessible.
-- **Isolation**: Custom networks for app-specific traffic.
-
-#### Basic CLI Commands
-
-1. Create a network
+Docker assigns containers their own internal IP addresses. To let multiple containers talk to each other by name, place them on a user-defined bridge network.
 
 ```bash
-docker network create my-network
-```
+# Create a dedicated network for an application stack
+docker network create app-network
 
-2. List networks
+# Run a database attached to the network
+docker run -d --network app-network --name database postgres:16-alpine
 
-```bash
+# Run an API attached to the same network; it can reach the database using 'database:5432'
+docker run -d --network app-network -p 3000:3000 --name api my-api:latest
+
+# Clean up networks
 docker network ls
+docker network rm app-network
 ```
-
-3. Inspect a network
-
-```bash
-docker network inspect my-network
-```
-
-4. Run on network
-
-```bash
-docker run -d --network my-network --name my-container my-image
-```
-
-5. Connect existing container
-
-```bash
-docker run -d --network my-network existing-container
-```
-
-6. Disconnect
-
-```bash
-docker network disconnect my-network my-container
-```
-
-7. Remove
-
-```bash
-docker network rm my-network
-```
-
-- **Examples**
-
-  - **Frontend-Backend Communication**: Create a network for a web app container to talk to a DB container via name (e.g., `db:5432`).
-  - **Multi-Host Setup**: Use overlay networks with Docker Swarm for distributed apps.
-  - **Security**: Isolate sensitive services on a private network, exposing only the API.
 
 ---
 
-### 6. Docker Compose
+## 6. Docker Compose
 
-#### What it is
+When an application relies on multiple containers (such as an API, a database, and a cache), typing separate `docker run` commands becomes tedious. Docker Compose lets you define the entire stack in a single `docker-compose.yml` file.
 
-Docker Compose is a tool for defining and running multi-container apps using a YAML file (docker-compose.yml).
+```yaml
+version: '3.8'
 
-#### Key Concepts
+services:
+  api:
+    build: .
+    ports:
+      - '3000:3000'
+    environment:
+      - DATABASE_URL=postgresql://postgres:secret@db:5432/mydb
+    depends_on:
+      - db
 
-- **Services**: Define containers (e.g., web, db).
-- **Volumes/Networks**: Declare in the file for persistence and communication.
-- **Dependencies**: Use `depends_on` for startup order.
-- **Environment Files**: Load vars from .env.
-- **Scaling**: Run multiple instances with `--scale`.
-- **Versions**: Compose file format (e.g., version: '3.8').
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: mydb
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
 
-#### Basic CLI Commands
-
-1. Start services
-
-```bash
-docker compose up -d  # from directory with docker-compose.yml
+volumes:
+  db_data:
 ```
 
-2. Stop services
+### Running Compose
 
 ```bash
-docker compose down
-# or
-docker compose down -v  # remove volume
-```
+# Start all services in the background
+docker compose up -d
 
-3. Build services
-
-```bash
-docker compose build
-```
-
-4. Logs
-
-```bash
-docker logs -f
-```
-
-5. Exec into service
-
-```bash
-docker compose exec web /bin/sh
-```
-
-6. Pull images
-
-```bash
-docker compose pull
-```
-
-7. List services
-
-```bash
+# Check status of compose services
 docker compose ps
+
+# View aggregate log output
+docker compose logs -f
+
+# Shut down all services and remove their network
+docker compose down
+
+# Shut down and remove persistent volumes as well
+docker compose down -v
 ```
-
-- **Examples**
-
-  - **Full-Stack App**: `docker-compose.yml` with services for Nginx, Node.js API, and MongoDB, linked via networks and volumes.
-  - **Development Environment**: Quickly spin up a local stack for testing with hot-reloading.
-  - **Production Deployment**: Use with overrides (`docker-compose.prod.yml`) for env-specific configs.
 
 ---
 
-### 7. Docker Hub and Registries
+## 7. Registries and Publishing
 
-#### What it is
-
-Docker Hub is a public registry for sharing images; private registries exist for secure storage.
-
-#### Key Concepts
-
-- **Repositories**: Like Git repos for images (e.g., username/my-app).
-- **Official Images**: Trusted ones like `python`, `mysql`.
-- **Authentication**: Login for private pushes/pulls.
-- **Scanning**: Check for vulnerabilities.
-- **Alternatives**: ECR (AWS), GCR (Google), self-hosted like Harbor.
-
-#### Basic CLI Commands
-
-1. Login
+Once you build and tag your image, you can push it to Docker Hub or any OCI-compliant registry:
 
 ```bash
-docker login  # enter credentials
-```
+# Authenticate with Docker Hub
+docker login
 
-2. Search repos
+# Tag the image with your Docker Hub handle
+docker tag my-app:latest username/my-app:1.0.0
 
-```bash
-docker search username/repo
-```
+# Push the image
+docker push username/my-app:1.0.0
 
-3. Pull from private
-
-```bash
-docker pull private-repo/image:tag
-```
-
-4. Push
-
-```bash
-docker push username/repo:tag
-```
-
-5. Logout
-
-```bash
+# Log out when finished
 docker logout
 ```
 
-6. For scanning, use Docker Scout
-
-```bash
-docker scout cves my-image
-```
-
-- **Examples**:
-
-  - **Sharing Open-Source**: Push a custom tool image to Docker Hub for community use.
-  - **CI/CD Integration**: In a pipeline, build and push to ECR for AWS deployments.
-  - **Vulnerability Checks**: Scan images before deployment to ensure security.
+These core primitives (images, containers, volumes, networks, and compose) form the baseline for building and running containerized services locally and in deployment pipelines.
